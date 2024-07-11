@@ -50,17 +50,12 @@ public class AuthenticationController {
     public ResponseEntity resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
         authenticationService.resetPassword(resetPasswordRequest);
         return ResponseEntity.ok( "Reset Password successfully");
-
     }
-
-
 
     @GetMapping("/testRole")
     public ResponseEntity testRole(){
         return ResponseEntity.ok("Test Role User Successfully");
     }
-
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin-only")

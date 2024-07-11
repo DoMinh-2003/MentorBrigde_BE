@@ -16,7 +16,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -36,6 +36,14 @@ public class SecurityConfig  {
             "/api/forgot-password"
     };
 
+    private final String[] PUBLIC_ENDPOINTS_METHOD = {
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/api/location",
+            "/api/court"
+    };
+
     @Autowired
     AuthenticationHandler authenticationHandler;
 
@@ -44,6 +52,7 @@ public class SecurityConfig  {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+//                        .requestMatchers(new CustomRequestMatcher(PUBLIC_ENDPOINTS_METHOD)).permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -52,7 +61,7 @@ public class SecurityConfig  {
                         .authenticationEntryPoint(authenticationHandler))
                 .csrf(AbstractHttpConfigurer::disable);
 
-//        httpSecurity.addFilterBefore(new Filter(PUBLIC_ENDPOINTS), AbstractPreAuthenticatedProcessingFilter.class);
+//        httpSecurity.addFilterBefore(new Filter(PUBLIC_ENDPOINTS, PUBLIC_ENDPOINTS_METHOD), UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
