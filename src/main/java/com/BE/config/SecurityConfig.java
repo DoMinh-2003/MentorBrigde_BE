@@ -1,6 +1,7 @@
 package com.BE.config;
 
 import com.BE.exception.handler.AuthenticationHandler;
+import com.BE.filter.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,13 +37,7 @@ public class SecurityConfig  {
             "/api/forgot-password"
     };
 
-    private final String[] PUBLIC_ENDPOINTS_METHOD = {
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/swagger-resources/**",
-            "/api/location",
-            "/api/court"
-    };
+    private final String[] PUBLIC_ENDPOINTS_METHOD = {};
 
     @Autowired
     AuthenticationHandler authenticationHandler;
@@ -52,7 +47,7 @@ public class SecurityConfig  {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-//                        .requestMatchers(new CustomRequestMatcher(PUBLIC_ENDPOINTS_METHOD)).permitAll()
+                        .requestMatchers(new CustomRequestMatcher(PUBLIC_ENDPOINTS_METHOD)).permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -61,7 +56,7 @@ public class SecurityConfig  {
                         .authenticationEntryPoint(authenticationHandler))
                 .csrf(AbstractHttpConfigurer::disable);
 
-//        httpSecurity.addFilterBefore(new Filter(PUBLIC_ENDPOINTS, PUBLIC_ENDPOINTS_METHOD), UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(new Filter(PUBLIC_ENDPOINTS, PUBLIC_ENDPOINTS_METHOD), UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
