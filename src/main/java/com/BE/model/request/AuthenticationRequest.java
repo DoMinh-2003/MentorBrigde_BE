@@ -17,11 +17,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AuthenticationRequest {
 
-    @NotBlank(message = "FirstName cannot be blank")
-    String firstName;
+    @NotBlank(message = "FullName cannot be blank")
+    String fullName;
 
-    @NotBlank(message = "LastName cannot be blank")
-    String lastName;
 
     @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
     @NotBlank(message = "Email cannot be blank")

@@ -17,17 +17,12 @@ import java.util.List;
 public class Filter extends OncePerRequestFilter {
 
     private List<String> PUBLIC_ENDPOINTS;
-
     private List<String> PUBLIC_ENDPOINTS_METHOD;
-
-
 
     public Filter(String[] PUBLIC_ENDPOINTS, String[] PUBLIC_ENDPOINTS_METHOD) {
         this.PUBLIC_ENDPOINTS = Arrays.asList(PUBLIC_ENDPOINTS);
         this.PUBLIC_ENDPOINTS_METHOD = Arrays.asList(PUBLIC_ENDPOINTS_METHOD);
     }
-
-
     @Override
     protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 

@@ -3,14 +3,13 @@ package com.BE.service;
 
 import com.BE.enums.RoleEnum;
 import com.BE.exception.exceptions.BadRequestException;
+import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.mapper.UserMapper;
 import com.BE.model.EmailDetail;
-import com.BE.model.request.LoginGoogleRequest;
-import com.BE.model.request.ResetPasswordRequest;
+import com.BE.model.request.*;
+import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.model.entity.User;
-import com.BE.model.request.AuthenticationRequest;
-import com.BE.model.request.LoginRequestDTO;
 import com.BE.repository.UserRepository;
 import com.BE.utils.AccountUtils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,13 +17,21 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import springfox.documentation.annotations.Cacheable;
+
+import java.util.UUID;
 
 
 @Service
-public class AuthenticationService {
+public class AuthenticationService  {
 
+    @Autowired
+    AuthenticationManager authenticationManager;
 
     @Autowired
     UserRepository userRepository;
@@ -35,7 +42,7 @@ public class AuthenticationService {
     @Autowired
     JWTService jwtService;
 
-   @Autowired
+    @Autowired
     UserMapper userMapper;
 
     @Autowired
@@ -43,6 +50,9 @@ public class AuthenticationService {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    RefreshTokenService refreshTokenService;
 
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
@@ -55,15 +65,23 @@ public class AuthenticationService {
            throw new DataIntegrityViolationException("Duplicate UserName");
        }
     }
-
+//    @Cacheable()
     public AuthenticationResponse authenticate(LoginRequestDTO request){
-        var user = userRepository
-                .findByUsername(request.getUsername())
-                .orElseThrow(() -> new NullPointerException("Wrong Id Or Password"));
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new NullPointerException("Wrong Id Or Password");
+        Authentication authentication = null;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername().trim(),
+                            request.getPassword().trim()
+                    )
+            );
+        } catch (Exception e) {
+            throw new NullPointerException("Wrong Id Or Password") ;
+        }
 
+        User user = (User) authentication.getPrincipal();
         AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
-        authenticationResponse.setToken(jwtService.generateToken(user));
+        authenticationResponse.setToken(jwtService.generateToken(user, UUID.randomUUID().toString(),false));
 
         return authenticationResponse;
     }
@@ -76,13 +94,14 @@ public class AuthenticationService {
             User user = userRepository.findByEmail(email).orElseThrow();
             if(user == null) {
                 user = new User();
-                user.setFirstName(decodeToken.getName());
+                user.setFullName(decodeToken.getName());
                 user.setEmail(email);
                 user.setUsername(email);
+                user.setRole(RoleEnum.USER);
                 user = userRepository.save(user);
             }
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
-            authenticationResponse.setToken(jwtService.generateToken(user));
+            authenticationResponse.setToken(jwtService.generateToken(user,UUID.randomUUID().toString(),false));
             return authenticationResponse;
         } catch (FirebaseAuthException e)
         {
@@ -100,8 +119,8 @@ public class AuthenticationService {
         emailDetail.setSubject("Reset password for account " + user.getEmail() + "!");
         emailDetail.setMsgBody("aaa");
         emailDetail.setButtonValue("Reset Password");
-        emailDetail.setFullName(user.getFirstName() + " " + user.getLastName());
-        emailDetail.setLink("http://jewerystorepoppy.online/reset-password?token=" + jwtService.generateToken(user));
+        emailDetail.setFullName(user.getFullName());
+        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
 
         Runnable r = new Runnable() {
             @Override
@@ -122,10 +141,26 @@ public class AuthenticationService {
 
 
     public String admin(){
-        return "admin";
+        String name = accountUtils.getCurrentUser().getUsername();
+        return name;
     }
 
+    public AuthenResponse refresh(RefreshRequest refreshRequest) {
+        AuthenResponse authenResponse = new AuthenResponse();
+        String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
+        if (refreshTokenService.validateRefreshToken(refresh)) {
+            System.out.println(refreshTokenService.getIdFromRefreshToken(refresh));
+            User user = userRepository.findById(refreshTokenService.getIdFromRefreshToken(refresh)).orElseThrow(() -> new BadRequestException("User Not Found"));
+            authenResponse.setToken(jwtService.generateToken(user,refresh,true));
+        }else{
+            throw new InvalidRefreshTokenException("Invalid refresh token");
+        }
+        return authenResponse;
+    }
 
-
+    public void logout(RefreshRequest refreshRequest) {
+        String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
+        refreshTokenService.deleteRefreshToken(refresh);
+    }
 }
 
