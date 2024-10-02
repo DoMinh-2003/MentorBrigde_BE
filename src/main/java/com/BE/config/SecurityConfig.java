@@ -2,9 +2,9 @@ package com.BE.config;
 
 import com.BE.exception.handler.AuthenticationHandler;
 import com.BE.filter.Filter;
-import com.BE.service.AuthenticationService;
 import com.BE.service.JpaUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,7 +34,8 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity
 public class SecurityConfig  {
 
-    private final String SECRET_KEY = "HT4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c";
+    @Value("${spring.secretkey}")
+    private String SECRET_KEY;
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui/**",
@@ -46,7 +47,6 @@ public class SecurityConfig  {
             "/api/status",
             "/api/refresh",
             "/api/logout"
-
     };
 
     private final String[] PUBLIC_ENDPOINTS_METHOD = {

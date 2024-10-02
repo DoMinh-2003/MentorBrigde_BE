@@ -29,11 +29,22 @@ public class User implements UserDetails {
 
     String fullName;
 
+    @Column(unique = true)
+    String studentCode;
 
+    String gender;
 
+    String dayOfBirth;
+
+    @Column(unique = true)
+    String phone;
+
+    String address;
 
     @Column(unique = true)
     String email;
+
+    String avatar;
 
     @Column(unique = true)
     String username;

@@ -1,4 +1,4 @@
-package com.BE.service;
+package com.BE.service.implementServices;
 
 
 import com.BE.enums.RoleEnum;
@@ -11,6 +11,10 @@ import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.model.entity.User;
 import com.BE.repository.UserRepository;
+import com.BE.service.EmailService;
+import com.BE.service.JWTService;
+import com.BE.service.RefreshTokenService;
+import com.BE.service.interfaceServices.AuthenticationService;
 import com.BE.utils.AccountUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -22,13 +26,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import springfox.documentation.annotations.Cacheable;
 
 import java.util.UUID;
 
 
 @Service
-public class AuthenticationService  {
+public class AuthenticationImpl implements AuthenticationService {
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -54,10 +57,11 @@ public class AuthenticationService  {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+    @Override
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(RoleEnum.USER);
+        user.setRole(RoleEnum.STUDENT);
        try {
            return userRepository.save(user);
        }catch (DataIntegrityViolationException e){
@@ -66,6 +70,7 @@ public class AuthenticationService  {
        }
     }
 //    @Cacheable()
+    @Override
     public AuthenticationResponse authenticate(LoginRequestDTO request){
         Authentication authentication = null;
         try {
@@ -86,7 +91,7 @@ public class AuthenticationService  {
         return authenticationResponse;
     }
 
-
+    @Override
     public AuthenticationResponse loginGoogle (LoginGoogleRequest loginGoogleRequest) {
         try{
             FirebaseToken decodeToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
@@ -97,7 +102,7 @@ public class AuthenticationService  {
                 user.setFullName(decodeToken.getName());
                 user.setEmail(email);
                 user.setUsername(email);
-                user.setRole(RoleEnum.USER);
+                user.setRole(RoleEnum.STUDENT);
                 user = userRepository.save(user);
             }
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
@@ -110,7 +115,7 @@ public class AuthenticationService  {
         return null;
     }
 
-
+    @Override
     public void forgotPasswordRequest(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email Not Found"));
 
@@ -132,19 +137,19 @@ public class AuthenticationService  {
         new Thread(r).start();
 
     }
-
+    @Override
     public User resetPassword(ResetPasswordRequest resetPasswordRequest) {
         User user = accountUtils.getCurrentUser();
         user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
         return userRepository.save(user);
     }
-
-
+    @Override
     public String admin(){
         String name = accountUtils.getCurrentUser().getUsername();
         return name;
     }
 
+    @Override
     public AuthenResponse refresh(RefreshRequest refreshRequest) {
         AuthenResponse authenResponse = new AuthenResponse();
         String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
@@ -157,7 +162,7 @@ public class AuthenticationService  {
         }
         return authenResponse;
     }
-
+    @Override
     public void logout(RefreshRequest refreshRequest) {
         String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
         refreshTokenService.deleteRefreshToken(refresh);

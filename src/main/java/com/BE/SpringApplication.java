@@ -10,14 +10,12 @@ import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 @EnableCaching
-@OpenAPIDefinition(info = @Info(title = "Do Minh API", version = "2.0", description = "Information"))
+@OpenAPIDefinition(info = @Info(title = "MentorBrigde API", version = "2.0", description = "Information"))
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 
 	public static void main(String[] args) {
 		org.springframework.boot.SpringApplication.run(SpringApplication.class,args);
 	}
-
-
 
 }

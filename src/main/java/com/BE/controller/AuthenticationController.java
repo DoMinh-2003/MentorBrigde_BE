@@ -4,18 +4,15 @@ package com.BE.controller;
 import com.BE.model.entity.User;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenticationResponse;
-import com.BE.service.AuthenticationService;
 import com.BE.service.JWTService;
+import com.BE.service.interfaceServices.AuthenticationService;
 import com.BE.utils.ResponseHandler;
-import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.text.ParseException;
 
 @RestController
 @RequestMapping("api")

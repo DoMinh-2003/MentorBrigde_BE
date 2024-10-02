@@ -7,7 +7,6 @@ import com.BE.model.entity.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -67,6 +66,32 @@ public class EmailService {
             messagingException.printStackTrace();
         }
     }
+
+//
+//
+//        public void sendTemplateEmail(String to, String subject, String templateContent, String name, String buttonValue, String link) throws MessagingException {
+//            // Tạo context cho Thymeleaf
+//            Context context = new Context();
+//            context.setVariable("name", name);
+//            context.setVariable("button", buttonValue);
+//            context.setVariable("link", link);
+//
+//            // Xử lý template với các biến động
+//            String processedTemplate = templateEngine.process(templateContent, context);
+//
+//            // Tạo email với nội dung template đã xử lý
+//            MimeMessage mimeMessage = mailSender.createMimeMessage();
+//            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+//
+//            mimeMessageHelper.setFrom("admin@gmail.com");
+//            mimeMessageHelper.setTo(to);
+//            mimeMessageHelper.setText(processedTemplate, true); // true để gửi email dạng HTML
+//            mimeMessageHelper.setSubject(subject);
+//
+//            // Gửi email
+//            mailSender.send(mimeMessage);
+//        }
+
 
 
 }
