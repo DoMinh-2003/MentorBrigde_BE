@@ -59,8 +59,9 @@ public class User implements UserDetails {
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
-
-
+    @ManyToOne
+    @JoinColumn(name = "team_code")
+    Team team;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

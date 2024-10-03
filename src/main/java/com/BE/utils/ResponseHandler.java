@@ -19,7 +19,7 @@ public class ResponseHandler<T> {
     private HandlerExceptionResolver resolver;
 
     public ResponseEntity<DataResponseDTO<T>> response(int statusCode, String message, T data) {
-        return ResponseEntity.ok(new DataResponseDTO<T>(statusCode, message, data));
+        return ResponseEntity.ok(new DataResponseDTO<>(statusCode, message, data));
     }
 
     public void responseResolver(HttpServletRequest request, HttpServletResponse response, Exception exception) {
