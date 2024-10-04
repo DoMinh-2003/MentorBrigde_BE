@@ -3,25 +3,24 @@ package com.BE.service.implementServices;
 import com.BE.enums.RoleEnum;
 import com.BE.model.entity.User;
 import com.BE.repository.UserRepository;
+import com.BE.service.interfaceServices.IAdminService;
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
+
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AdminService {
+public class AdminServiceImpl implements IAdminService {
 
     @Autowired
     private UserRepository userRepository;
 
-
-
-    public void importCsv(MultipartFile file) {
+    @Override
+    public void importCSV(MultipartFile file) {
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
             String[] values;
             List<User> users = new ArrayList<>();

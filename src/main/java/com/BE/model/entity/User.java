@@ -61,6 +61,14 @@ public class User implements UserDetails {
 
 
 
+    @ManyToMany
+    @JoinTable(name = "user_semester",
+    joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "semester_id")
+    )
+    Set<Semester> semesters;
+
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
