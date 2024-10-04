@@ -11,8 +11,6 @@ import com.BE.service.interfaceServices.ISemesterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-
 @Service
 public class SemesterImpl implements ISemesterService {
     @Autowired

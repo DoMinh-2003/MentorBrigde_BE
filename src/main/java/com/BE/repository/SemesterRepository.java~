@@ -12,4 +12,5 @@ public interface SemesterRepository extends JpaRepository<Semester, UUID> {
     @Query("SELECT s FROM Semester s WHERE :today BETWEEN s.dateFrom AND s.dateTo")
     Semester findCurrentSemester(@Param("today") LocalDate today);
 
+
 }
