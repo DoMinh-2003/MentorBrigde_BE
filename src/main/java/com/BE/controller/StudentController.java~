@@ -46,7 +46,6 @@ public class StudentController {
             @RequestParam String code,
             @RequestParam(defaultValue = "1", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int size,
-            @Parameter(description = "Sort by", schema = @Schema(allowableValues = {"studentCode", "fullName","dayOfBirth"}))
             @RequestParam(required = false) String sortBy,
             @Parameter(description = "Sort direction", schema = @Schema(allowableValues = {"asc", "desc"}))
             @RequestParam(required = false) String sortDirection) {

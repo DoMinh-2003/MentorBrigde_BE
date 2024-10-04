@@ -25,8 +25,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Page<UserResponse> getStudentsByFullNameContaining(String fullName, int offset, int size,
-                                                              String sortBy, String sortDirection) {
+    public Page<UserResponse> getStudentsByFullNameContaining(String fullName, int offset, int size, String sortBy, String sortDirection) {
         // Check offset
         pageUtil.checkOffset(offset);
         if (fullName == null || fullName.trim().isEmpty()) {
@@ -42,8 +41,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Page<UserResponse> getStudentsByStudentCode(String studentCode, int offset, int size,
-                                                       String sortBy, String sortDirection) {
+    public Page<UserResponse> getStudentsByStudentCode(String studentCode, int offset, int size, String sortBy, String sortDirection) {
         // Check offset
         pageUtil.checkOffset(offset);
         if (studentCode == null || studentCode.trim().isEmpty()) {

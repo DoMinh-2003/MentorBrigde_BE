@@ -13,10 +13,19 @@ public class PageUtil {
         }
     }
 
-    public Pageable getPageable(int offset, int pageSize, String sortBy) {
-        return sortBy == null
-                ? PageRequest.of(offset, pageSize)
-                : PageRequest.of(offset, pageSize, Sort.by(sortBy));
+    public Pageable getPageable(int offset, int pageSize, String sortBy, String sortDirection) {
+        Sort sort = Sort.unsorted();
+
+        // Check if sortBy is provided
+        if (sortBy != null) {
+            // Check the direction (ascending or descending)
+            sort = "desc".equalsIgnoreCase(sortDirection)
+                    ? Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+        }
+
+        return PageRequest.of(offset, pageSize, sort);
     }
+
 
 }

@@ -5,7 +5,7 @@ spring.datasource.password=123456
 
 # JPA settings
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=create
 spring.main.allow-circular-references=true
 
 spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
