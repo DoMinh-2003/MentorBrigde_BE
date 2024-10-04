@@ -1,5 +1,6 @@
 package com.BE.exception.handler;
 
+import com.BE.exception.exceptions.DateException;
 import com.BE.exception.exceptions.EnumValidationException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.exception.exceptions.NotFoundException;
@@ -101,4 +102,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<String> handleInvalidFormatException(InvalidFormatException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Format Day");
+    }
+    @ExceptionHandler(DateException.class)
+    public ResponseEntity<String> handleDateException(DateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 }
