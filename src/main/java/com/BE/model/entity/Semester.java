@@ -2,9 +2,7 @@ package com.BE.model.entity;
 
 
 import com.BE.enums.StatusEnum;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.UuidGenerator;
@@ -31,6 +29,7 @@ public class Semester {
     LocalDate dateFrom;
     LocalDate dateTo;
 
+    @Enumerated(EnumType.STRING)
     StatusEnum status = StatusEnum.ACTIVE;
 
     @ManyToMany(mappedBy = "semesters")

@@ -66,7 +66,7 @@ public class User implements UserDetails {
     joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "semester_id")
     )
-    Set<Semester> semesters;
+    Set<Semester> semesters = new HashSet<>();
 
 
 

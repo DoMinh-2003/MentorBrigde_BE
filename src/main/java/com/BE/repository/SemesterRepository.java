@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface SemesterRepository extends JpaRepository<Semester, UUID> {
 
-
+    Semester findSemesterByCode(String Code);
 
 }
