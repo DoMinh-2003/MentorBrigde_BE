@@ -46,7 +46,8 @@ public class SecurityConfig  {
             "/api/forgot-password",
             "/api/status",
             "/api/refresh",
-            "/api/logout"
+            "/api/logout",
+            "/api/admin//upload-csv"
     };
 
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
