@@ -25,8 +25,12 @@ public class Team {
     String code;
     LocalDate createdAt;
     String createdBy;
+
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    Semester semester;
+
     @OneToMany(mappedBy = "team")
     @JsonIgnore
-    Set<User> users = new HashSet<>();
-
+    Set<UserTeam> userTeams = new HashSet<>();
 }

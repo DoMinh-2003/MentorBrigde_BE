@@ -23,4 +23,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Page<User> findByFullNameContaining(String fullName, Pageable pageable);
 
     Page<User> findByStudentCode(String studentCode, Pageable pageable);
+
+    Page<User> findByEmail(String email, Pageable pageable);
 }

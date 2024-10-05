@@ -2,7 +2,6 @@ package com.BE.model.entity;
 
 
 import com.BE.enums.StatusEnum;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
@@ -39,7 +38,6 @@ public class Semester {
     Set<User> users;
 
     @OneToMany(mappedBy = "semester")
-    @JsonIgnore
     Set<Team> teams;
 
 

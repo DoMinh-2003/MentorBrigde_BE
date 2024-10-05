@@ -29,7 +29,7 @@ public class User implements UserDetails {
 
     String fullName;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     String studentCode;
 
     String gender;
@@ -67,10 +67,9 @@ public class User implements UserDetails {
     )
     Set<Semester> semesters;
 
-
-    @ManyToOne
-    @JoinColumn(name = "team_code", referencedColumnName = "code")
-    Team team;
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    Set<UserTeam> userTeams = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

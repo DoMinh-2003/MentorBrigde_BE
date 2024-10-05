@@ -4,14 +4,14 @@ import com.BE.mapper.UserMapper;
 import com.BE.model.entity.User;
 import com.BE.model.response.UserResponse;
 import com.BE.repository.UserRepository;
-import com.BE.service.interfaceServices.StudentService;
+import com.BE.service.interfaceServices.IStudentService;
 import com.BE.utils.PageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StudentServiceImpl implements StudentService {
+public class StudentImpl implements IStudentService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PageUtil pageUtil;
@@ -20,9 +20,9 @@ public class StudentServiceImpl implements StudentService {
     private static final String STUDENT_CODE_PATTERN = "^[A-Za-z]{2}\\d{6}$"; // Two letters followed by six digits
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
-    public StudentServiceImpl(UserRepository userRepository,
-                              UserMapper userMapper,
-                              PageUtil pageUtil) {
+    public StudentImpl(UserRepository userRepository,
+                       UserMapper userMapper,
+                       PageUtil pageUtil) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.pageUtil = pageUtil;
