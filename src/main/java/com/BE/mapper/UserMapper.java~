@@ -8,17 +8,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
 
+
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
     User toUser(AuthenticationRequest request);
 
     UserResponse toUserResponse(User user);
-
     AuthenticationResponse toAuthenticationResponse(User user);
 
 
-    void updateUser(@MappingTarget User user, AuthenticationRequest request);
+    void updateUser(@MappingTarget User user , AuthenticationRequest request);
 
 
 }

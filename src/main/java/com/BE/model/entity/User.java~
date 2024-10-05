@@ -65,11 +65,11 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "semester_id")
     )
-    Set<Semester> semesters = new HashSet<>();
+    Set<Semester> semesters;
 
 
     @ManyToOne
-    @JoinColumn(name = "team_code", referencedColumnName = "code")
+    @JoinColumn(name = "team_code")
     Team team;
 
     @Override
