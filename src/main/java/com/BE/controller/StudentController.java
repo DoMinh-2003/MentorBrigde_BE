@@ -1,6 +1,7 @@
 package com.BE.controller;
 
 import com.BE.model.response.DataResponseDTO;
+import com.BE.model.response.UserResponse;
 import com.BE.service.interfaceServices.TeamService;
 import com.BE.service.interfaceServices.StudentService;
 import com.BE.utils.ResponseHandler;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,32 +30,27 @@ public class StudentController {
         this.responseHandler = responseHandler;
     }
 
-    @GetMapping("/students/name")
-    public ResponseEntity<DataResponseDTO<Object>> getStudentsByName(
-            @RequestParam String name,
+    @GetMapping("/students/search")
+    public ResponseEntity<DataResponseDTO<Object>> searchStudents(
+            @RequestParam String searchTerm,
             @RequestParam(defaultValue = "1", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int size,
-            @Parameter(description = "Sort by", schema = @Schema(allowableValues = {"studentCode", "fullName","dayOfBirth"}))
-            @RequestParam(required = false) String sortBy,
-            @Parameter(description = "Sort direction", schema = @Schema(allowableValues = {"asc", "desc"}))
-            @RequestParam(required = false) String sortDirection) {
-        return responseHandler.response(200, "Search by name success!",
-                studentService.getStudentsByFullNameContaining(name, offset, size, sortBy, sortDirection));
-    }
-
-    @GetMapping("/students/code")
-    public ResponseEntity<DataResponseDTO<Object>> getStudentsByCode(
-            @RequestParam String code,
-            @RequestParam(defaultValue = "1", required = false) int offset,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @Parameter(description = "Sort by", schema = @Schema(allowableValues = {"studentCode", "fullName","dayOfBirth"}))
+            @Parameter(description = "Sort by", schema = @Schema(allowableValues = {"studentCode", "fullName", "dayOfBirth"}))
             @RequestParam(required = false) String sortBy,
             @Parameter(description = "Sort direction", schema = @Schema(allowableValues = {"asc", "desc"}))
             @RequestParam(required = false) String sortDirection) {
 
-        return responseHandler.response(200, "Search by code success!",
-                studentService.getStudentsByStudentCode(code, offset, size, sortBy, sortDirection));
+        // Check if the search term is provided
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(new DataResponseDTO<>(400, "Search term is required.", null));
+        }
+
+        // Search by name or code
+        Page<UserResponse> result = studentService.searchStudents(searchTerm, offset, size, sortBy, sortDirection);
+
+        return responseHandler.response(200, "Search successful!", result);
     }
+
 
     @PostMapping("/team")
     public ResponseEntity<DataResponseDTO<Object>> createTeam() {
