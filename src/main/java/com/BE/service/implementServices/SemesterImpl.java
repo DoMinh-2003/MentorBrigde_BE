@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 
+import com.BE.enums.SemesterEnum;
 import com.BE.exception.exceptions.DateException;
 import com.BE.mapper.SemesterMapper;
 import com.BE.model.entity.Semester;
@@ -31,6 +32,7 @@ public class SemesterImpl implements ISemesterService {
         }
 
         Semester semester = semesterMapper.toSemester(semesterRequest);
+        semester.setStatus(SemesterEnum.UPCOMING);
         semester = semesterRepository.save(semester);
         return semesterMapper.toSemesterResponse(semester);
     }

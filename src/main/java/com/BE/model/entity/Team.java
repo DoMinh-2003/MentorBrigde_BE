@@ -24,6 +24,7 @@ public class Team {
     @Column(unique = true, nullable = false)
     String code;
     LocalDate createdAt;
+
     String createdBy;
 
     @ManyToOne
@@ -33,4 +34,11 @@ public class Team {
     @OneToMany(mappedBy = "team")
     @JsonIgnore
     Set<UserTeam> userTeams = new HashSet<>();
+
+
+    @OneToOne
+    @JoinColumn(name = "topic_id")
+    Topic topic;
+
+
 }

@@ -1,12 +1,10 @@
 package com.BE.model.entity;
 
 
+import com.BE.enums.SemesterEnum;
 import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -15,6 +13,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,14 +34,20 @@ public class Semester {
     LocalDate dateTo;
 
     @Enumerated(EnumType.STRING)
-    StatusEnum status = StatusEnum.ACTIVE;
+    SemesterEnum status;
+
 
     @ManyToMany(mappedBy = "semesters")
+    @JsonIgnore
     Set<User> users;
 
     @OneToMany(mappedBy = "semester")
     @JsonIgnore
     Set<Team> teams;
+
+    @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
+    Set<Topic> topics = new HashSet<>();
+
 
 
 }

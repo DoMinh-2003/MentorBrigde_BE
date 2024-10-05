@@ -19,7 +19,6 @@ public class AdminController {
 
     @PostMapping(value = "/upload-csv", consumes = "multipart/form-data")
     @Operation(summary = "Upload CSV file of students")
-
     public ResponseEntity<String> uploadCsv(@RequestPart(value = "file") MultipartFile file) {
         if (file.isEmpty()) return ResponseEntity.status(400).body("File is empty");
         adminService.importCSV(file);

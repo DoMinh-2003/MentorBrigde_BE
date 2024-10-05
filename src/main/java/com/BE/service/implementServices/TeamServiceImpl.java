@@ -9,7 +9,8 @@ import com.BE.model.entity.UserTeam; // Import UserTeam
 import com.BE.repository.TeamRepository;
 import com.BE.repository.UserTeamRepository; // Import UserTeamRepository
 import com.BE.service.interfaceServices.ISemesterService;
-import com.BE.service.interfaceServices.TeamService;
+
+import com.BE.service.interfaceServices.ITeamService;
 import com.BE.utils.AccountUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 @Service
-public class TeamServiceImpl implements TeamService {
+public class TeamServiceImpl implements ITeamService {
 
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;

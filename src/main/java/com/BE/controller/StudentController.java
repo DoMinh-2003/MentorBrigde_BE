@@ -2,8 +2,8 @@ package com.BE.controller;
 
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.UserResponse;
-import com.BE.service.interfaceServices.TeamService;
-import com.BE.service.interfaceServices.StudentService;
+import com.BE.service.interfaceServices.IStudentService;
+import com.BE.service.interfaceServices.ITeamService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "api")
 @Tag(name = "Student Controller")
 public class StudentController {
-    private final StudentService studentService;
-    private final TeamService teamService;
+    private final IStudentService studentService;
+    private final ITeamService teamService;
     private final ResponseHandler<Object> responseHandler;
 
-    public StudentController(StudentService studentService,
-                             TeamService teamService,
+    public StudentController(IStudentService studentService,
+                             ITeamService teamService,
                              ResponseHandler<Object> responseHandler) {
         this.studentService = studentService;
         this.teamService = teamService;

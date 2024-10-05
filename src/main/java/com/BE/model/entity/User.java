@@ -55,7 +55,7 @@ public class User implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     RoleEnum role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
@@ -67,9 +67,19 @@ public class User implements UserDetails {
     )
     Set<Semester> semesters = new HashSet<>();
 
+
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     Set<UserTeam> userTeams = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "creator",cascade = CascadeType.ALL)
+    @JsonIgnore
+    Set<Topic> topics = new HashSet<>();
+
+
+  
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
