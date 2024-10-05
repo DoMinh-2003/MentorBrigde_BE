@@ -21,7 +21,7 @@ public class Team {
     @Id
     @UuidGenerator
     UUID id;
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     String code;
     LocalDate createdAt;
     String createdBy;

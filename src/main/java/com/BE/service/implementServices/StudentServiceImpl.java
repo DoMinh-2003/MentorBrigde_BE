@@ -67,6 +67,9 @@ public class StudentServiceImpl implements StudentService {
         // convert Page<User> to Page<UserResponse>
         return users.map(this::getUserResponse);
     }
-
+    @Override
+    public void saveStudent(User user) {
+        userRepository.save(user);
+    }
 
 }

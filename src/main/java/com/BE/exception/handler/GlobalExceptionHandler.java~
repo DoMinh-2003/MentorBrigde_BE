@@ -105,14 +105,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<String> handleIllegalArgumentException(Exception ex) {
         return responseHandler.response(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
     }
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalStateException ex) {
-        return responseHandler.response(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
-    }
+
 
     @ExceptionHandler(PropertyReferenceException.class)
     public ResponseEntity<String> handlePropertyReferenceException(PropertyReferenceException ex) {

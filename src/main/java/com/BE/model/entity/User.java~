@@ -59,22 +59,18 @@ public class User implements UserDetails {
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
-<<<<<<< HEAD
-    @ManyToOne
-    @JoinColumn(name = "team_code")
-    Team team;
-=======
-
 
     @ManyToMany
     @JoinTable(name = "user_semester",
-    joinColumns = @JoinColumn(name = "user_id"),
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "semester_id")
     )
     Set<Semester> semesters;
 
 
->>>>>>> origin/master
+    @ManyToOne
+    @JoinColumn(name = "team_code")
+    Team team;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
