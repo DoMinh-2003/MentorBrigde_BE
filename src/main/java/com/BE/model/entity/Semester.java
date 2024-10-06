@@ -48,6 +48,4 @@ public class Semester {
     @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
     Set<Topic> topics = new HashSet<>();
 
-
-
 }

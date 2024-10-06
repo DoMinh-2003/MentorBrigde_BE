@@ -30,7 +30,7 @@ public class StudentController {
         this.responseHandler = responseHandler;
     }
 
-    @GetMapping("/students/search")
+    @GetMapping("/students")
     public ResponseEntity<DataResponseDTO<Object>> searchStudents(
             @RequestParam String searchTerm,
             @RequestParam(defaultValue = "1", required = false) int offset,

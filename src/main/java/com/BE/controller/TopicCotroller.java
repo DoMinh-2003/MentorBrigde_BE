@@ -15,8 +15,9 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("api/topic")
 @SecurityRequirement(name = "api")
-@RequestMapping(name = "api/topic")
+
 public class TopicCotroller {
 
     @Autowired
@@ -26,7 +27,7 @@ public class TopicCotroller {
     ITopicService iTopicService;
 
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity createTopic(
             @RequestPart("topic") TopicRequest topicRequest,
             @RequestPart("file") MultipartFile file) throws IOException {
