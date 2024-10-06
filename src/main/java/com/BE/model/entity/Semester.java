@@ -30,8 +30,9 @@ public class Semester {
 
     String code;
     String name;
-    LocalDate dateFrom;
-    LocalDate dateTo;
+
+    LocalDateTime dateFrom;
+    LocalDateTime dateTo;
 
     @Enumerated(EnumType.STRING)
     SemesterEnum status;
