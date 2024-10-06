@@ -22,8 +22,13 @@ public interface SemesterRepository extends JpaRepository<Semester, UUID> {
     Semester findSemesterByCode(String Code);
 
     Optional<Semester> findByStatus(SemesterEnum semesterEnum);
-    Page<Semester> findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(String code, String name, Pageable pageable);
-
-
-
+    @Query("SELECT s FROM Semester s WHERE " +
+            "(:code IS NULL OR :code = '' OR LOWER(s.code) LIKE LOWER(CONCAT('%', :code, '%'))) " +
+            "AND (:name IS NULL OR :name = '' OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+            "AND (:status IS NULL OR s.status = :status)")
+    Page<Semester> findByCodeContainingIgnoreCaseAndNameContainingIgnoreCaseAndStatus(
+            @Param("code") String code,
+            @Param("name") String name,
+            @Param("status") SemesterEnum status,
+            Pageable pageable);
 }

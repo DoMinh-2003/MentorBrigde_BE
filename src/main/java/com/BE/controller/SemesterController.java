@@ -1,11 +1,13 @@
 package com.BE.controller;
 
 
+import com.BE.enums.SemesterEnum;
 import com.BE.model.request.SemesterRequest;
 import com.BE.model.response.SemesterResponse;
 import com.BE.service.implementServices.SemesterImpl;
 import com.BE.service.interfaceServices.ISemesterService;
 import com.BE.utils.ResponseHandler;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +40,11 @@ public class SemesterController {
     public ResponseEntity getAllSemesters(
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) SemesterEnum status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<SemesterResponse> data = semesterService.searchSemesters(code, name, page, size);
-        return  responseHandler.response(200,"Get Data SuccessFully", data);
+
+        Page<SemesterResponse> data = semesterService.searchSemesters(code, name, status, page, size);
+        return responseHandler.response(200, "Get Data Successfully", data);
     }
 }
