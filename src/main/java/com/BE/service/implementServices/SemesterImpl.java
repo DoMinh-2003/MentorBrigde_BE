@@ -109,14 +109,17 @@ public class SemesterImpl implements ISemesterService {
         return semesterMapper.toSemesterResponse(semester);
     }
 
-    public Page<SemesterResponse> searchSemesters(String code, String name, int page, int size) {
+    public Page<SemesterResponse> searchSemesters(String code, String name, SemesterEnum status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Semester> semesterPage;
-        if ((code == null || code.isEmpty()) && (name == null || name.isEmpty())) {
+
+        if ((code == null || code.isEmpty()) && (name == null || name.isEmpty()) && (status == null)) {
             semesterPage = semesterRepository.findAll(pageable);
         } else {
-            semesterPage = semesterRepository.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(code, name, pageable);
+            semesterPage = semesterRepository.findByCodeContainingIgnoreCaseAndNameContainingIgnoreCaseAndStatus(
+                    code, name, status, pageable);
         }
+
         return semesterPage.map(semesterMapper::toSemesterResponse);
     }
 
