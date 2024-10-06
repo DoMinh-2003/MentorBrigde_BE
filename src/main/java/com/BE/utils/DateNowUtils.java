@@ -16,6 +16,11 @@ public class DateNowUtils {
     }
 
 
+    public LocalDateTime getCurrentDateTimeHCM() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return zonedDateTime.toLocalDateTime();
+    }
+
 
 
 
