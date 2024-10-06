@@ -16,6 +16,6 @@ public class SemesterResponse {
     UUID id;
     String code;
     String name;
-    LocalDate dateFrom;
-    LocalDate dateTo;
+    LocalDateTime dateFrom;
+    LocalDateTime dateTo;
 }
