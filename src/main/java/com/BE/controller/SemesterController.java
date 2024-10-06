@@ -9,11 +9,11 @@ import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/semester")
@@ -29,5 +29,18 @@ public class SemesterController {
     @PostMapping("")
     public ResponseEntity<SemesterResponse> createNewSemester(@Valid @RequestBody SemesterRequest semesterRequest){
         return  responseHandler.response(200,"Create New Semester Successfully",semesterService.createNewSemester(semesterRequest));
+    }
+    @PutMapping("{id}")
+    public ResponseEntity<SemesterResponse> updateSemester(@PathVariable UUID id, @Valid @RequestBody SemesterRequest semesterRequest){
+        return  responseHandler.response(200,"Update Semester Successfully",semesterService.updateSemester(id,semesterRequest));
+    }
+    @GetMapping("")
+    public ResponseEntity getAllSemesters(
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<SemesterResponse> data = semesterService.searchSemesters(code, name, page, size);
+        return  responseHandler.response(200,"Get Data SuccessFully", data);
     }
 }

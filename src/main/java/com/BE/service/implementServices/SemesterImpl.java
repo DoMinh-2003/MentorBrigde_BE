@@ -3,6 +3,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.SemesterEnum;
 import com.BE.exception.exceptions.DateException;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.SemesterMapper;
 import com.BE.model.entity.Semester;
 import com.BE.model.request.SemesterRequest;
@@ -14,12 +15,16 @@ import com.BE.service.interfaceServices.ISemesterService;
 import com.BE.utils.DateNowUtils;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class SemesterImpl implements ISemesterService {
@@ -34,30 +39,19 @@ public class SemesterImpl implements ISemesterService {
 
 
     @Autowired
-    private  Scheduler scheduler;  // Quartz scheduler
+    private Scheduler scheduler;  // Quartz scheduler
+
     @Override
     public SemesterResponse createNewSemester(SemesterRequest semesterRequest) {
         LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
-        if (semesterRequest.getDateFrom() == null || semesterRequest.getDateTo() == null) {
-            throw new DateException("Both Date From and Date To must be provided");
-        }
-        if (semesterRequest.getDateTo().isBefore(semesterRequest.getDateFrom())) {
-            throw new DateException("Date To must be later than Date From");
-        }
-        if (semesterRequest.getDateFrom().isBefore(now)) {
-            throw new DateException("Date From cannot be in the past");
-        }
+        dateNowUtils.validateSemesterDates(semesterRequest);
+        Semester semester = semesterMapper.toSemester(semesterRequest);
+        semester.setStatus(SemesterEnum.UPCOMING);
+        semester = semesterRepository.save(semester);
 
-        if (semesterRequest.getDateTo().isBefore(now)) {
-            throw new DateException("Date To cannot be in the past");
-        }
-            Semester semester = semesterMapper.toSemester(semesterRequest);
-            semester.setStatus(SemesterEnum.UPCOMING);
-            semester = semesterRepository.save(semester);
-
-            // Lên lịch job kích hoạt kỳ học
-            scheduleActivationJob(semester);
-            return semesterMapper.toSemesterResponse(semester);
+        // Lên lịch job kích hoạt kỳ học
+        scheduleActivationJob(semester);
+        return semesterMapper.toSemesterResponse(semester);
     }
 
     private void scheduleActivationJob(Semester semester) {
@@ -100,9 +94,30 @@ public class SemesterImpl implements ISemesterService {
 
     @Override
     public Semester getCurrentSemester() {
-        LocalDate today = LocalDate.now();
+        LocalDateTime today = dateNowUtils.getCurrentDateTimeHCM();
         return semesterRepository.findCurrentSemester(today);
     }
 
+    @Override
+    public SemesterResponse updateSemester(UUID semesterID,SemesterRequest semesterRequest) {
+        dateNowUtils.validateSemesterDates(semesterRequest);
+        Semester semester = semesterRepository.findById(semesterID).
+                orElseThrow(() -> new NotFoundException("Semester Not Exist"));
+
+        semesterMapper.updateSemester(semester, semesterRequest);
+        semester = semesterRepository.save(semester);
+        return semesterMapper.toSemesterResponse(semester);
+    }
+
+    public Page<SemesterResponse> searchSemesters(String code, String name, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Semester> semesterPage;
+        if ((code == null || code.isEmpty()) && (name == null || name.isEmpty())) {
+            semesterPage = semesterRepository.findAll(pageable);
+        } else {
+            semesterPage = semesterRepository.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(code, name, pageable);
+        }
+        return semesterPage.map(semesterMapper::toSemesterResponse);
+    }
 
 }
