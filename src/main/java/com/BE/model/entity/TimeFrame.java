@@ -21,8 +21,8 @@ public class TimeFrame {
     @UuidGenerator
     UUID id;
 
-    LocalDateTime hourFrom;
-    LocalDateTime hourTo;
+//    LocalDateTime from;
+//    LocalDateTime to;
 
 
 }

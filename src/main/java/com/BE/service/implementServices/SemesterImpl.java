@@ -32,10 +32,10 @@ public class SemesterImpl implements ISemesterService {
     SemesterRepository semesterRepository;
 
     @Autowired
-    SemesterMapper semesterMapper;
+    DateNowUtils dateNowUtils;
 
     @Autowired
-    DateNowUtils dateNowUtils;
+    SemesterMapper semesterMapper;
 
 
     @Autowired
@@ -47,6 +47,7 @@ public class SemesterImpl implements ISemesterService {
         dateNowUtils.validateSemesterDates(semesterRequest);
         Semester semester = semesterMapper.toSemester(semesterRequest);
         semester.setStatus(SemesterEnum.UPCOMING);
+        semester.setCreatedAt(dateNowUtils.dateNow());
         semester = semesterRepository.save(semester);
 
         // Lên lịch job kích hoạt kỳ học
@@ -92,11 +93,11 @@ public class SemesterImpl implements ISemesterService {
     }
 
 
-    @Override
-    public Semester getCurrentSemester() {
-        LocalDateTime today = dateNowUtils.getCurrentDateTimeHCM();
-        return semesterRepository.findCurrentSemester(today);
-    }
+//    @Override
+//    public Semester getCurrentSemester() {
+//        LocalDateTime today = dateNowUtils.getCurrentDateTimeHCM();
+//        return semesterRepository.findCurrentSemester(today);
+//    }
 
     @Override
     public SemesterResponse updateSemester(UUID semesterID,SemesterRequest semesterRequest) {
@@ -108,6 +109,7 @@ public class SemesterImpl implements ISemesterService {
         semester = semesterRepository.save(semester);
         return semesterMapper.toSemesterResponse(semester);
     }
+
 
     public Page<SemesterResponse> searchSemesters(String code, String name, SemesterEnum status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -121,6 +123,11 @@ public class SemesterImpl implements ISemesterService {
         }
 
         return semesterPage.map(semesterMapper::toSemesterResponse);
+    }
+        
+    @Override
+    public Semester getCurrentSemester() {
+        return semesterRepository.findByStatus(SemesterEnum.UPCOMING).orElseThrow(() -> new NotFoundException("Semester Not Found"));
     }
 
 }

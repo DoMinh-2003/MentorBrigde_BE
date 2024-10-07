@@ -37,6 +37,8 @@ public class Semester {
     @Enumerated(EnumType.STRING)
     SemesterEnum status;
 
+    LocalDateTime createdAt;
+
 
     @ManyToMany(mappedBy = "semesters")
     @JsonIgnore

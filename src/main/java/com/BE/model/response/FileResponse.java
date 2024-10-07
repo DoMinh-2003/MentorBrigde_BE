@@ -1,6 +1,9 @@
 package com.BE.model.response;
 
 
+import com.BE.enums.StatusEnum;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
