@@ -46,7 +46,6 @@ public class TeamServiceImpl implements ITeamService {
         Semester semester = semesterService.getCurrentSemester();
         team.setCode(generateGroupCode(semester));
         team.setCreatedAt(LocalDate.now());
-        team.setCreatedBy(user.getFullName());
         team.setSemester(semester);
         // Save the team
         teamRepository.save(team);

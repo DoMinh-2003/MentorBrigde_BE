@@ -18,14 +18,15 @@ import java.util.UUID;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Team {
+
     @Id
     @UuidGenerator
     UUID id;
+
     @Column(unique = true, nullable = false)
     String code;
-    LocalDate createdAt;
 
-    String createdBy;
+    LocalDate createdAt;
 
     @ManyToOne
     @JoinColumn(name = "semester_id")
@@ -36,9 +37,7 @@ public class Team {
     Set<UserTeam> userTeams = new HashSet<>();
 
 
-    @OneToOne
-    @JoinColumn(name = "topic_id")
-    Topic topic;
-
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    Set<Topic> topics = new HashSet<>();
 
 }
