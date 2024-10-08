@@ -4,6 +4,8 @@ import com.BE.model.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 
@@ -20,9 +22,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
 
-    Page<User> findByFullNameContaining(String fullName, Pageable pageable);
-
-    Page<User> findByStudentCode(String studentCode, Pageable pageable);
-
-    Page<User> findByEmail(String phone, Pageable pageable);
+    @Query("SELECT u FROM User u WHERE u.fullName LIKE %:searchTerm% OR u.studentCode = :searchTerm OR u.email = :searchTerm")
+    Page<User> findByFullNameContainingOrStudentCodeOrEmail(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
 }

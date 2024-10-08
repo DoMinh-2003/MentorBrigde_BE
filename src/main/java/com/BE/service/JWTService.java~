@@ -87,17 +87,21 @@ public class JWTService {
     }
     public User getUserByToken(String token) {
         try {
+            // Giải mã token
             JWSObject jwsObject = JWSObject.parse(token);
 
+            // Xác minh chữ ký của token
             MACVerifier verifier = new MACVerifier(SECRET_KEY.getBytes());
             if (!jwsObject.verify(verifier)) {
                 throw new RuntimeException("Invalid token signature");
             }
 
+            // Lấy thông tin từ claims
             JWTClaimsSet claimsSet = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
             String username = claimsSet.getSubject();
 
-            return userRepository.findByUsername(username).orElse(null);
+            // Tìm người dùng trong cơ sở dữ liệu bằng tên đăng nhập
+            return userRepository.findByUsername(username).orElse(null); // Cần có phương thức này trong UserRepository
         } catch (ParseException | JOSEException e) {
             throw new RuntimeException("Error parsing token", e);
         }

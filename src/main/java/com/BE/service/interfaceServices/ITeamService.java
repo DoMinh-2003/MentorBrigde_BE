@@ -5,5 +5,7 @@ import com.BE.model.entity.User;
 
 public interface ITeamService {
     Team createTeam();
-    Team addMemberToGroup(Team team, User user);
+    void inviteMember(String email, String teamCode);
+    void addMemberToTeam(User user, String teamCode);
+    void acceptInvitation(String token, String teamCode);
 }

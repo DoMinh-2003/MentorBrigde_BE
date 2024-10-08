@@ -66,7 +66,7 @@ public class StudentController {
         teamService.inviteMember(email, teamCode);
         return ResponseEntity.ok( "Invite member successfully!");
     }
-    @GetMapping("/accept-invitation")
+    @GetMapping("/team/accept-invitation")
     public ResponseEntity<Object> acceptInvitation(@RequestParam String token, @RequestParam String teamCode) {
         teamService.acceptInvitation(token, teamCode);
         return ResponseEntity.ok( "Accept invitation successfully!");
