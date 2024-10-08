@@ -42,7 +42,7 @@ public class Semester {
 
     @ManyToMany(mappedBy = "semesters")
     @JsonIgnore
-    Set<User> users;
+    Set<User> users = new HashSet<>();
 
     @OneToMany(mappedBy = "semester")
     @JsonIgnore
