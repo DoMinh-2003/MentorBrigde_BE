@@ -1,9 +1,6 @@
 package com.BE.exception.handler;
 
-import com.BE.exception.exceptions.DateException;
-import com.BE.exception.exceptions.EnumValidationException;
-import com.BE.exception.exceptions.InvalidRefreshTokenException;
-import com.BE.exception.exceptions.NotFoundException;
+import com.BE.exception.exceptions.*;
 import com.BE.utils.EnumUtils;
 import com.BE.utils.ResponseHandler;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -105,10 +102,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-    }    @ExceptionHandler(DateException.class)
+    }
+    @ExceptionHandler(DateException.class)
     public ResponseEntity<String> handleDateException(DateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+    @ExceptionHandler(SemesterException.class)
+    public ResponseEntity<String> hanldeSemesterException(SemesterException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
         return responseHandler.response(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);

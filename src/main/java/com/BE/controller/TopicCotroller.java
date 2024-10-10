@@ -18,6 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/topic")
 @SecurityRequirement(name = "api")
+@CrossOrigin("*")
 public class TopicCotroller {
 
     @Autowired

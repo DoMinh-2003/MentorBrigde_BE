@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api")
 @SecurityRequirement(name = "api")
 @Tag(name = "Student Controller")
+@CrossOrigin("*")
 public class StudentController {
     private final IStudentService studentService;
     private final ITeamService teamService;

@@ -4,6 +4,7 @@ package com.BE.service.implementServices;
 import com.BE.enums.SemesterEnum;
 import com.BE.exception.exceptions.DateException;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.exception.exceptions.SemesterException;
 import com.BE.mapper.SemesterMapper;
 import com.BE.model.entity.Semester;
 import com.BE.model.request.SemesterRequest;
@@ -43,7 +44,11 @@ public class SemesterImpl implements ISemesterService {
 
     @Override
     public SemesterResponse createNewSemester(SemesterRequest semesterRequest) {
-        LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
+          Semester currentSemester =  semesterRepository.findSemesterByStatus(SemesterEnum.UPCOMING);
+          if(currentSemester !=null){
+              throw new SemesterException("Only 1 semester is Upcoming ");
+          }
+
         dateNowUtils.validateSemesterDates(semesterRequest);
         Semester semester = semesterMapper.toSemester(semesterRequest);
         semester.setStatus(SemesterEnum.UPCOMING);
@@ -124,7 +129,16 @@ public class SemesterImpl implements ISemesterService {
 
         return semesterPage.map(semesterMapper::toSemesterResponse);
     }
-        
+
+    @Override
+    public SemesterResponse deleteSemester(UUID id) {
+        Semester semester = semesterRepository.findById(id).
+                orElseThrow(() -> new NotFoundException("Semester Not Found"));
+        semester.setDeleted(true);
+        semesterRepository.save(semester);
+        return semesterMapper.toSemesterResponse(semester);
+    }
+
     @Override
     public Semester getCurrentSemester() {
         return semesterRepository.findByStatus(SemesterEnum.UPCOMING).orElseThrow(() -> new NotFoundException("Semester Not Found"));

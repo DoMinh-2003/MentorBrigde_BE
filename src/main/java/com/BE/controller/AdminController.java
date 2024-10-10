@@ -20,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/admin")
 @SecurityRequirement(name = "api")
+@CrossOrigin("*")
 public class AdminController {
 
     @Autowired
