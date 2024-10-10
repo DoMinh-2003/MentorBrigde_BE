@@ -38,7 +38,8 @@ public class Semester {
     SemesterEnum status;
 
     LocalDateTime createdAt;
-
+    @Column(name = "is_deleted")
+    boolean isDeleted = false;
 
     @ManyToMany(mappedBy = "semesters")
     @JsonIgnore

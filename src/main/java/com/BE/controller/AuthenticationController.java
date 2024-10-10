@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api")
 @SecurityRequirement(name ="api")
+@CrossOrigin("*")
 public class AuthenticationController {
 
     @Autowired

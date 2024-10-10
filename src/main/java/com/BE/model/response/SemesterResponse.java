@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 
+import com.BE.enums.SemesterEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,4 +19,5 @@ public class SemesterResponse {
     String name;
     LocalDateTime dateFrom;
     LocalDateTime dateTo;
+    SemesterEnum status;
 }

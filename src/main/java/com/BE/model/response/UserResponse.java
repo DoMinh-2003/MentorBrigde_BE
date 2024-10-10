@@ -1,5 +1,6 @@
 package com.BE.model.response;
 
+import com.BE.enums.RoleEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,4 +14,9 @@ public class UserResponse {
     String studentCode;
     String email;
     String avatar;
+    RoleEnum role;
+    String gender;
+    String dayOfBirth;
+    String phone;
+    String username;
 }
