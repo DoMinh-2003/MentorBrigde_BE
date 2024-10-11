@@ -61,6 +61,11 @@ public class StudentController {
     public ResponseEntity<DataResponseDTO<Object>> createTeam() {
         return responseHandler.response(200, "Create group success!", teamService.createTeam());
     }
+    @PutMapping("/team/set-leader")
+    public ResponseEntity<Object> setLeader(@RequestParam String email, @RequestParam String teamCode) {
+        teamService.setTeamLeader(email, teamCode);
+        return ResponseEntity.ok( "Set leader successfully!");
+    }
 
     @PostMapping("/team/invite")
     public ResponseEntity<Object> inviteMember(@RequestParam String email, @RequestParam String teamCode) {

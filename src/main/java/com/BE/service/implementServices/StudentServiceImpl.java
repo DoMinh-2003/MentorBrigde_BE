@@ -1,5 +1,6 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.RoleEnum;
 import com.BE.mapper.UserMapper;
 import com.BE.model.entity.User;
 import com.BE.model.response.UserResponse;
@@ -33,7 +34,7 @@ public class StudentServiceImpl implements IStudentService {
         // Create pageable with offset -1 (default in controller is 1)
         Pageable pageable = pageUtil.getPageable(offset - 1, size, sortBy, sortDirection);
 
-        Page<User> users = userRepository.findByFullNameContainingOrStudentCodeOrEmail(searchTerm, pageable);
+        Page<User> users = userRepository.searchUsers(searchTerm, RoleEnum.STUDENT, pageable);
 
         // Return user responses
         return convertToUserResponses(users);

@@ -11,6 +11,10 @@ import java.util.UUID;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, UUID> {
     int countBySemester(Semester semester);
-    boolean existsByUserId(UUID userId);
+<<<<<<< HEAD
     Optional<Team> findByCode(String code);
+=======
+
+
+>>>>>>> master
 }

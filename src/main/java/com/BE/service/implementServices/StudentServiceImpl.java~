@@ -53,3 +53,4 @@ public class StudentServiceImpl implements IStudentService {
     public User getStudentByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
     }
+}
