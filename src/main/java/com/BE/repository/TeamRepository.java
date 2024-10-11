@@ -12,4 +12,6 @@ import java.util.UUID;
 public interface TeamRepository extends JpaRepository<Team, UUID> {
     int countBySemester(Semester semester);
     Optional<Team> findByCode(String code);
+
+
 }

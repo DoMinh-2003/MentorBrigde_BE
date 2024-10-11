@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.UuidGenerator;
 
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -28,7 +29,10 @@ public class Topic {
 
     String description;
 
-    @OneToOne(mappedBy = "topic", cascade = CascadeType.ALL)
+    LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "team_id")
     @JsonIgnore
     Team team;
 

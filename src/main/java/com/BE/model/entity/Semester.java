@@ -37,10 +37,13 @@ public class Semester {
     @Enumerated(EnumType.STRING)
     SemesterEnum status;
 
+    LocalDateTime createdAt;
+    @Column(name = "is_deleted")
+    boolean isDeleted = false;
 
     @ManyToMany(mappedBy = "semesters")
     @JsonIgnore
-    Set<User> users;
+    Set<User> users = new HashSet<>();
 
     @OneToMany(mappedBy = "semester")
     @JsonIgnore
