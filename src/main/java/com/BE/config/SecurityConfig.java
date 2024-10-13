@@ -43,11 +43,12 @@ public class SecurityConfig  {
             "/swagger-resources/**",
             "/api/register",
             "/api/login",
+            "/api/login-google",
             "/api/forgot-password",
             "/api/status",
             "/api/refresh",
             "/api/logout",
-            "/api/admin//upload-csv"
+            "/api/admin/upload-csv"
     };
 
     private final String[] PUBLIC_ENDPOINTS_METHOD = {

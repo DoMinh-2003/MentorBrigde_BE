@@ -77,8 +77,9 @@
         @JsonIgnore
         Set<Topic> topics = new HashSet<>();
 
-
-
+        @OneToMany(mappedBy = "mentor", cascade = CascadeType.ALL)
+        @JsonIgnore
+        Set<TimeFrame> timeFrames = new HashSet<>();
 
 
         @Override

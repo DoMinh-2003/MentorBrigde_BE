@@ -52,7 +52,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login-google")
-    private ResponseEntity checkLoginGoogle(@RequestBody LoginGoogleRequest loginGGRequest){
+    public ResponseEntity loginGoogle(@RequestBody LoginGoogleRequest loginGGRequest){
         return responseHandler.response(200, "Login Google success!", authenticationService.loginGoogle(loginGGRequest));
     }
 
