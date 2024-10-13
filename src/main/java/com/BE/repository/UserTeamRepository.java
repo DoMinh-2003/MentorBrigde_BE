@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface UserTeamRepository extends JpaRepository<UserTeam, UUID> {
-
+    boolean existsByUserId(UUID userId);
 }

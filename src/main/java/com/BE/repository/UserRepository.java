@@ -25,7 +25,9 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
 
-    Page<User> findByFullNameContaining(String fullName, Pageable pageable);
+    @Query("SELECT u FROM User u WHERE u.fullName LIKE %:searchTerm% OR u.studentCode = :searchTerm OR u.email = :searchTerm")
+    Page<User> findByFullNameContainingOrStudentCodeOrEmail(@Param("searchTerm") String searchTerm, Pageable pageable);
+
 
     Page<User> findByStudentCode(String studentCode, Pageable pageable);
 
@@ -41,6 +43,5 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Page<User> searchUsers(@Param("search") String search,
                            @Param("role") RoleEnum role,
                            Pageable pageable);
-
 
 }

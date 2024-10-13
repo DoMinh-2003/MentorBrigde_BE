@@ -9,4 +9,5 @@ public interface IStudentService {
                                                String sortBy, String sortDirection);
 
     void saveStudent(User user);
+    User getStudentByEmail(String email);
 }
