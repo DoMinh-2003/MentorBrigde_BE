@@ -3,10 +3,14 @@ package com.BE.service.implementServices;
 import com.BE.enums.RoleEnum;
 import com.BE.enums.SemesterEnum;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.mapper.ConfigMapper;
 import com.BE.mapper.UserMapper;
+import com.BE.model.entity.Config;
 import com.BE.model.entity.Semester;
 import com.BE.model.entity.User;
+import com.BE.model.request.ConfigRequest;
 import com.BE.model.response.UserResponse;
+import com.BE.repository.ConfigRepository;
 import com.BE.repository.SemesterRepository;
 import com.BE.repository.UserRepository;
 import com.BE.service.interfaceServices.IAdminService;
@@ -36,6 +40,12 @@ public class AdminServiceImpl implements IAdminService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    ConfigRepository configRepository;
+
+    @Autowired
+    ConfigMapper configMapper;
 
     @Override
     public void importCSV(MultipartFile file) {
@@ -95,6 +105,13 @@ public class AdminServiceImpl implements IAdminService {
         Pageable pageable = PageRequest.of(page, size);
             Page<User> userPage = userRepository.searchUsers(search, role, pageable);
         return userPage.map(userMapper::toUserResponse);
+    }
+
+    @Override
+    public Config createConfig(ConfigRequest configRequest) {
+        Config config = configMapper.toConfig(configRequest);
+        config.setMinTimeSlotDuration(configRequest.getMinTimeSlotDuration());
+        return configRepository.save(config);
     }
 
 

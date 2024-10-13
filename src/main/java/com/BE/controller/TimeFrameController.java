@@ -2,8 +2,6 @@ package com.BE.controller;
 
 
 import com.BE.model.request.ScheduleRequest;
-import com.BE.model.request.SemesterRequest;
-import com.BE.model.response.SemesterResponse;
 import com.BE.service.interfaceServices.ITimeFrameService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -11,6 +9,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/schedule")
@@ -28,9 +28,21 @@ public class TimeFrameController {
 
 
     @PostMapping
-    public ResponseEntity<SemesterResponse> createSchedule(@Valid @RequestBody ScheduleRequest scheduleRequest){
-        return  responseHandler.response(200,"Create New Schedule Successfully",iTimeFrameService.createSchedule(scheduleRequest));
+    public ResponseEntity createSchedule(@Valid @RequestBody ScheduleRequest scheduleRequest){
+        return  responseHandler.response(200,"Create New Schedule Successfully", iTimeFrameService.createSchedule(scheduleRequest));
     }
+
+    @PostMapping("calculate")
+    public ResponseEntity calculateTotalHours(@Valid @RequestBody ScheduleRequest scheduleRequest){
+        return  responseHandler.response(200,"CalculateTotalHours Schedule Successfully", iTimeFrameService.calculateTotalHours(scheduleRequest));
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity getGroupedTimeSlots(@PathVariable UUID id) {
+        return  responseHandler.response(200,"Get Schedule Successfully", iTimeFrameService.getGroupedTimeSlots(id));
+    }
+
+
 
 
 }
