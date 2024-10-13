@@ -120,7 +120,6 @@ public class TeamServiceImpl implements ITeamService {
         String formattedCounter = String.format("%03d", counter);
 
         // Generate ID: G + semester symbol + year + 3-digit counter
-
         return "G" + symbol + year + formattedCounter;
     }
 }
