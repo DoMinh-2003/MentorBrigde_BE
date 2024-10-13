@@ -27,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -92,19 +93,20 @@ public class AuthenticationImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthenticationResponse loginGoogle (LoginGoogleRequest loginGoogleRequest) {
+    public AuthenticationResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
         try{
             FirebaseToken decodeToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
             String email = decodeToken.getEmail();
-            User user = userRepository.findByEmail(email).orElseThrow();
-            if(user == null) {
-                user = new User();
-                user.setFullName(decodeToken.getName());
-                user.setEmail(email);
-                user.setUsername(email);
-                user.setRole(RoleEnum.STUDENT);
-                user = userRepository.save(user);
-            }
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email Not Found"));
+//            if(user == null) {
+//                user = new User();
+//                user.setFullName(decodeToken.getName());
+//                user.setEmail(email);
+//                user.setUsername(email);
+//                user.setRole(RoleEnum.STUDENT);
+//                user = userRepository.save(user);
+//            }
+
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
             authenticationResponse.setToken(jwtService.generateToken(user,UUID.randomUUID().toString(),false));
             return authenticationResponse;
@@ -118,7 +120,6 @@ public class AuthenticationImpl implements AuthenticationService {
     @Override
     public void forgotPasswordRequest(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email Not Found"));
-
         EmailDetail emailDetail = new EmailDetail();
         emailDetail.setRecipient(user.getEmail());
         emailDetail.setSubject("Reset password for account " + user.getEmail() + "!");

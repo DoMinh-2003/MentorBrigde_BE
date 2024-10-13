@@ -20,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/semester")
 @SecurityRequirement(name ="api")
+@CrossOrigin("*")
 public class SemesterController {
 
     @Autowired
@@ -36,6 +37,10 @@ public class SemesterController {
     public ResponseEntity<SemesterResponse> updateSemester(@PathVariable UUID id, @Valid @RequestBody SemesterRequest semesterRequest){
         return  responseHandler.response(200,"Update Semester Successfully",semesterService.updateSemester(id,semesterRequest));
     }
+    @DeleteMapping("{id}")
+    public ResponseEntity<SemesterResponse> deleteSemester(@PathVariable UUID id){
+        return  responseHandler.response(200,"Deleted Semester Successfully",semesterService.deleteSemester(id));
+    }
     @GetMapping("")
     public ResponseEntity getAllSemesters(
             @RequestParam(required = false) String code,
@@ -47,4 +52,7 @@ public class SemesterController {
         Page<SemesterResponse> data = semesterService.searchSemesters(code, name, status, page, size);
         return responseHandler.response(200, "Get Data Successfully", data);
     }
+
+
+
 }

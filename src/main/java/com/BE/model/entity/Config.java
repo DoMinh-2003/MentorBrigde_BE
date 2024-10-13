@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.Duration;
 import java.util.UUID;
 
 @Entity
@@ -15,7 +16,13 @@ import java.util.UUID;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Config {
+
     @Id
     @UuidGenerator
     UUID id;
+
+    int minimumHours;
+
+    Duration minTimeSlotDuration;
+
 }

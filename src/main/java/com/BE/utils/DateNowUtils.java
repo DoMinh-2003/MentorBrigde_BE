@@ -11,10 +11,9 @@ import java.time.format.DateTimeParseException;
 
 @Component
 public class DateNowUtils {
-    public String dateNow() {
+    public LocalDateTime dateNow() {
         ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return zonedDateTime.format(formatter);
+        return zonedDateTime.toLocalDateTime();
     }
 
 

@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 
+import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,6 +25,7 @@ public class File {
     String name;
 
     @Lob
+    @Column(columnDefinition = "LONGBLOB")
     byte[] content;
 
     @ManyToOne

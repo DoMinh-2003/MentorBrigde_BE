@@ -4,6 +4,7 @@ package com.BE.service.implementServices;
 import com.BE.enums.SemesterEnum;
 import com.BE.exception.exceptions.DateException;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.exception.exceptions.SemesterException;
 import com.BE.mapper.SemesterMapper;
 import com.BE.model.entity.Semester;
 import com.BE.model.request.SemesterRequest;
@@ -32,10 +33,10 @@ public class SemesterImpl implements ISemesterService {
     SemesterRepository semesterRepository;
 
     @Autowired
-    SemesterMapper semesterMapper;
+    DateNowUtils dateNowUtils;
 
     @Autowired
-    DateNowUtils dateNowUtils;
+    SemesterMapper semesterMapper;
 
 
     @Autowired
@@ -43,10 +44,15 @@ public class SemesterImpl implements ISemesterService {
 
     @Override
     public SemesterResponse createNewSemester(SemesterRequest semesterRequest) {
-        LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
+          Semester currentSemester =  semesterRepository.findSemesterByStatus(SemesterEnum.UPCOMING);
+          if(currentSemester !=null){
+              throw new SemesterException("Only 1 semester is Upcoming ");
+          }
+
         dateNowUtils.validateSemesterDates(semesterRequest);
         Semester semester = semesterMapper.toSemester(semesterRequest);
         semester.setStatus(SemesterEnum.UPCOMING);
+        semester.setCreatedAt(dateNowUtils.dateNow());
         semester = semesterRepository.save(semester);
 
         // Lên lịch job kích hoạt kỳ học
@@ -92,11 +98,11 @@ public class SemesterImpl implements ISemesterService {
     }
 
 
-    @Override
-    public Semester getCurrentSemester() {
-        LocalDateTime today = dateNowUtils.getCurrentDateTimeHCM();
-        return semesterRepository.findCurrentSemester(today);
-    }
+//    @Override
+//    public Semester getCurrentSemester() {
+//        LocalDateTime today = dateNowUtils.getCurrentDateTimeHCM();
+//        return semesterRepository.findCurrentSemester(today);
+//    }
 
     @Override
     public SemesterResponse updateSemester(UUID semesterID,SemesterRequest semesterRequest) {
@@ -108,6 +114,7 @@ public class SemesterImpl implements ISemesterService {
         semester = semesterRepository.save(semester);
         return semesterMapper.toSemesterResponse(semester);
     }
+
 
     public Page<SemesterResponse> searchSemesters(String code, String name, SemesterEnum status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -121,6 +128,20 @@ public class SemesterImpl implements ISemesterService {
         }
 
         return semesterPage.map(semesterMapper::toSemesterResponse);
+    }
+
+    @Override
+    public SemesterResponse deleteSemester(UUID id) {
+        Semester semester = semesterRepository.findById(id).
+                orElseThrow(() -> new NotFoundException("Semester Not Found"));
+        semester.setDeleted(true);
+        semesterRepository.save(semester);
+        return semesterMapper.toSemesterResponse(semester);
+    }
+
+    @Override
+    public Semester getCurrentSemester() {
+        return semesterRepository.findByStatus(SemesterEnum.UPCOMING).orElseThrow(() -> new NotFoundException("Semester Not Found"));
     }
 
 }

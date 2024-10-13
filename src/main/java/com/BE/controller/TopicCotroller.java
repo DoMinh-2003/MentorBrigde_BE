@@ -2,9 +2,10 @@ package com.BE.controller;
 
 import com.BE.enums.TopicEnum;
 import com.BE.model.request.TopicRequest;
-import com.BE.model.response.FileResponse;
+
 import com.BE.service.interfaceServices.ITopicService;
 import com.BE.utils.ResponseHandler;
+import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/topic")
 @SecurityRequirement(name = "api")
-
+@CrossOrigin("*")
 public class TopicCotroller {
 
     @Autowired
@@ -30,7 +31,7 @@ public class TopicCotroller {
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity createTopic(
             @RequestPart("topic") TopicRequest topicRequest,
-            @RequestPart("file") MultipartFile file) throws IOException {
+             @RequestPart("file") MultipartFile file) throws IOException {
         return  responseHandler.response(200,"Create New Topic Successfully", iTopicService.createTopic(topicRequest, file));
     }
 
@@ -39,15 +40,26 @@ public class TopicCotroller {
         return  responseHandler.response(200,"Get Topic Detail Successfully", iTopicService.getTopic(id));
     }
 
-    @GetMapping("admin")
-    public ResponseEntity getTopicsAdmin() {
-        return  responseHandler.response(200,"Get Topic Successfully", iTopicService.getTopicsAdmin());
+    @GetMapping()
+    public ResponseEntity getTopics(
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(required = false) TopicEnum status,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) String semesterCode
+    ) {
+        return  responseHandler.response(200,"Get Topic Successfully", iTopicService.getTopics(name, status, page, size, sortBy, sortDirection,semesterCode));
     }
 
-    @GetMapping("mentor")
-    public ResponseEntity getTopicsMentor() {
-        return  responseHandler.response(200,"Get Topic Successfully", iTopicService.getTopicsMentor());
+
+    @PutMapping(value = "{id}",consumes = "multipart/form-data")
+    public ResponseEntity updateTopic(@PathVariable UUID id, @RequestPart("file") MultipartFile file) throws IOException {
+        return  responseHandler.response(200,"Update Topic Successfully", iTopicService.updateTopic(id,file));
+
     }
+
 
     @GetMapping("download/{fileId}")
     public ResponseEntity getFile(@PathVariable UUID fileId) {
@@ -62,11 +74,6 @@ public class TopicCotroller {
     @PatchMapping("rejected/{id}")
     public ResponseEntity rejected(@PathVariable UUID id) {
         return  responseHandler.response(200,"Rejected Topic Successfully", iTopicService.changeStatus(id,TopicEnum.REJECTED));
-    }
-
-    @DeleteMapping("{id}")
-    public ResponseEntity delete(@PathVariable UUID id) {
-        return  responseHandler.response(200,"Delete Topic Successfully", iTopicService.changeStatus(id,TopicEnum.INACTIVE));
     }
 
 
