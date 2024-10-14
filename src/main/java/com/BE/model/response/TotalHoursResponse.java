@@ -3,6 +3,8 @@ package com.BE.model.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,7 +14,7 @@ public class TotalHoursResponse {
 
     String currentTotalHours;
     int minimumRequiredHours;
-    String message;
+    List<String> messages;
 
     Boolean error;
 }
