@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +15,7 @@ public class TotalHoursResponse {
 
     String currentTotalHours;
     int minimumRequiredHours;
-    List<String> messages;
-
+    Map<String, List<String>> messages;
+    String overallErrorMessage;
     Boolean error;
 }

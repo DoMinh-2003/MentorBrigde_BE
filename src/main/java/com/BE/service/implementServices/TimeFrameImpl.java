@@ -48,6 +48,12 @@ public class TimeFrameImpl implements ITimeFrameService {
         Semester semester = semesterRepository.findByStatus(SemesterEnum.UPCOMING)
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
 
+        TotalHoursResponse  totalHoursResponse = calculateTotalHours(scheduleRequest);
+
+        if(totalHoursResponse.getError()) {
+            throw new RuntimeException("Fail Create Semester");
+        }
+
         LocalDateTime semesterStartDate = semester.getDateFrom();
         LocalDateTime semesterEndDate = semester.getDateTo();
 
@@ -155,8 +161,9 @@ public class TimeFrameImpl implements ITimeFrameService {
     @Override
     public TotalHoursResponse calculateTotalHours(ScheduleRequest scheduleRequest) {
         Duration totalDuration = Duration.ZERO; // Khởi tạo biến tổng
-        List<String> messages = new ArrayList<>(); // Danh sách lưu trữ thông báo lỗi
+        Map<String, List<String>> messages = new LinkedHashMap<>();
         Boolean error = false;
+        String overallErrorMessage = null;
 
         // Lặp qua từng ngày trong ScheduleRequest
         List<TimeFrameRequest> allTimeFrames = new ArrayList<>();
@@ -175,17 +182,7 @@ public class TimeFrameImpl implements ITimeFrameService {
             }
         }
 
-        // Tính toán tổng thời gian
-        for (TimeFrameRequest timeFrameRequest : allTimeFrames) {
-            totalDuration = totalDuration.plus(calculateHoursForDay(Collections.singletonList(timeFrameRequest)));
-        }
-
-        Config config = configRepository.findFirstBy();
-        Duration minTimeSlotDuration = config.getMinTimeSlotDuration();
-
-
-
-        // Kiểm tra phần thời gian dư cho mỗi ngày
+        // Kiểm tra khung giờ chồng lấp theo từng ngày
         String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         List<List<TimeFrameRequest>> dailySlots = Arrays.asList(
                 scheduleRequest.getMonday(),
@@ -196,14 +193,52 @@ public class TimeFrameImpl implements ITimeFrameService {
                 scheduleRequest.getSaturday(),
                 scheduleRequest.getSunday()
         );
+
+        for (int i = 0; i < dailySlots.size(); i++) {
+            List<TimeFrameRequest> dailySlot = dailySlots.get(i);
+            for (int j = 0; j < dailySlot.size(); j++) {
+                TimeFrameRequest currentFrame = dailySlot.get(j);
+                for (int t = j + 1; t < dailySlot.size(); t++) {
+                    TimeFrameRequest comparingFrame = dailySlot.get(t);
+
+                    // Kiểm tra xem hai khoảng thời gian có giống hệt nhau không
+                    if (currentFrame.getStartTime().equals(comparingFrame.getStartTime()) &&
+                            currentFrame.getEndTime().equals(comparingFrame.getEndTime())) {
+                        messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
+                                .add("Error: Time frames are identical: " + currentFrame + " and " + comparingFrame + ".");
+                        error = true;
+                    }else{
+                        // Kiểm tra xem hai khoảng thời gian có chồng lấp không
+                        if (currentFrame.getStartTime().isBefore(comparingFrame.getEndTime()) &&
+                                comparingFrame.getStartTime().isBefore(currentFrame.getEndTime())) {
+                            messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
+                                    .add("Error: Time frames overlap between " + currentFrame + " and " + comparingFrame + ".");
+                            error = true;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        // Tính toán tổng thời gian
+        for (TimeFrameRequest timeFrameRequest : allTimeFrames) {
+            totalDuration = totalDuration.plus(calculateHoursForDay(Collections.singletonList(timeFrameRequest)));
+        }
+
+        Config config = configRepository.findFirstBy();
+        Duration minTimeSlotDuration = config.getMinTimeSlotDuration();
+
+        // Kiểm tra phần thời gian dư cho mỗi ngày
         for (int i = 0; i < dailySlots.size(); i++) {
             List<TimeFrameRequest> dailySlot = dailySlots.get(i);
             if (!dailySlot.isEmpty()) {
                 // Tính tổng thời gian cho ngày
-                Duration dailyTotalDuration = Duration.ZERO;
+
                 for (TimeFrameRequest slot : dailySlot) {
+                    Duration dailyTotalDuration = Duration.ZERO;
                     dailyTotalDuration = dailyTotalDuration.plus(Duration.between(slot.getStartTime(), slot.getEndTime()));
-                }
+
 
                 // Kiểm tra xem thời gian tổng có phải là bội số của slotDuration không
                 Duration slotDuration = scheduleRequest.getSlotDuration();
@@ -212,13 +247,15 @@ public class TimeFrameImpl implements ITimeFrameService {
                     Duration remainingDuration = dailyTotalDuration.minus(slotDuration.multipliedBy(dailyTotalDuration.toMinutes() / slotDuration.toMinutes()));
 
                     if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
-                        messages.add("Remaining time is not sufficient to create a new slot for " + daysOfWeek[i] + ".");
+                        messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
+                                .add("Error: Remaining time is not sufficient to create a new slot for " + daysOfWeek[i] + ".");
                         error = true;
                     } else {
                         // Gửi cảnh báo đến client
-                        messages.add("Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + daysOfWeek[i] + ". Do you want to create a slot with this time?");
-
+                        messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
+                                .add("Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + daysOfWeek[i] + ". Do you want to create a slot with this time?");
                     }
+                }
                 }
             }
         }
@@ -226,16 +263,16 @@ public class TimeFrameImpl implements ITimeFrameService {
         int totalHour = (int) totalDuration.toHours();
         int totalMinutes = (int) (totalDuration.toMinutes() % 60);
 
-        if(totalHour < config.getMinimumHours()){
-            messages.add("Your total hours are " + totalHour + "h" + totalMinutes + "p" + " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.");
+        if (totalHour < config.getMinimumHours()) {
+            overallErrorMessage = "Your total hours are " + totalHour + "h" + totalMinutes + "p" + " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.";
             error = true;
         }
-
 
         return TotalHoursResponse.builder()
                 .currentTotalHours(totalHour + "h" + totalMinutes + "p")
                 .minimumRequiredHours(config.getMinimumHours())
                 .messages(messages)
+                .overallErrorMessage(overallErrorMessage)
                 .error(error)
                 .build();
     }
