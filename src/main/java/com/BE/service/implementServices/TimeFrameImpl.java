@@ -155,7 +155,7 @@ public class TimeFrameImpl implements ITimeFrameService {
     @Override
     public TotalHoursResponse calculateTotalHours(ScheduleRequest scheduleRequest) {
         Duration totalDuration = Duration.ZERO; // Khởi tạo biến tổng
-        String message = "";
+        List<String> messages = new ArrayList<>(); // Danh sách lưu trữ thông báo lỗi
         Boolean error = false;
 
         // Lặp qua từng ngày trong ScheduleRequest
@@ -212,12 +212,12 @@ public class TimeFrameImpl implements ITimeFrameService {
                     Duration remainingDuration = dailyTotalDuration.minus(slotDuration.multipliedBy(dailyTotalDuration.toMinutes() / slotDuration.toMinutes()));
 
                     if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
-                        message = "Remaining time is not sufficient to create a new slot for " + daysOfWeek[i] + ".";
+                        messages.add("Remaining time is not sufficient to create a new slot for " + daysOfWeek[i] + ".");
                         error = true;
                     } else {
                         // Gửi cảnh báo đến client
-                        message = "Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + daysOfWeek[i] + ". Do you want to create a slot with this time?";
-                        error = false;
+                        messages.add("Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + daysOfWeek[i] + ". Do you want to create a slot with this time?");
+
                     }
                 }
             }
@@ -227,7 +227,7 @@ public class TimeFrameImpl implements ITimeFrameService {
         int totalMinutes = (int) (totalDuration.toMinutes() % 60);
 
         if(totalHour < config.getMinimumHours()){
-            message = "Your total hours are " + totalHour + "h" + totalMinutes + "p" + " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.";
+            messages.add("Your total hours are " + totalHour + "h" + totalMinutes + "p" + " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.");
             error = true;
         }
 
@@ -235,7 +235,7 @@ public class TimeFrameImpl implements ITimeFrameService {
         return TotalHoursResponse.builder()
                 .currentTotalHours(totalHour + "h" + totalMinutes + "p")
                 .minimumRequiredHours(config.getMinimumHours())
-                .message(message)
+                .messages(messages)
                 .error(error)
                 .build();
     }
