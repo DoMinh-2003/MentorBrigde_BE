@@ -170,6 +170,13 @@ public class TimeFrameImpl implements ITimeFrameService {
         Map<String, List<String>> messages = new LinkedHashMap<>();
         Boolean error = false;
         String overallErrorMessage = null;
+        Config config = configRepository.findFirstBy();
+        Duration minTimeSlotDuration = config.getMinTimeSlotDuration();
+
+        if(minTimeSlotDuration.compareTo(scheduleRequest.getSlotDuration()) > 0){
+            overallErrorMessage = "Error: Remaining time is not sufficient to create a new slot";
+            error = true;
+        }
 
         // Lặp qua từng ngày trong ScheduleRequest
         List<TimeFrameRequest> allTimeFrames = new ArrayList<>();
@@ -232,8 +239,7 @@ public class TimeFrameImpl implements ITimeFrameService {
             totalDuration = totalDuration.plus(calculateHoursForDay(Collections.singletonList(timeFrameRequest)));
         }
 
-        Config config = configRepository.findFirstBy();
-        Duration minTimeSlotDuration = config.getMinTimeSlotDuration();
+
 
         // Kiểm tra phần thời gian dư cho mỗi ngày
         for (int i = 0; i < dailySlots.size(); i++) {
