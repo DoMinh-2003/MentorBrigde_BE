@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 public class TeamServiceImpl implements ITeamService {
@@ -93,6 +94,39 @@ public class TeamServiceImpl implements ITeamService {
         }else {
             throw new IllegalArgumentException("The Invitation is not valid or expired!");
         }
+    }
+
+    @Transactional
+    @Override
+    public void setTeamLeader(String email, String teamCode) {
+        User currentUser = accountUtils.getCurrentUser();
+        User user = studentService.getStudentByEmail(email);
+        UserTeam currentUserTeam = getUserTeamByUserIdAndValidate(currentUser.getId(), teamCode,
+                "You must be the current team leader to assign a new leader.");
+
+        if (!currentUserTeam.getRole().equals(TeamRoleEnum.LEADER)) {
+            throw new IllegalArgumentException("Only a team leader can assign a new leader.");
+        }
+
+        UserTeam newLeaderUserTeam = getUserTeamByUserIdAndValidate(user.getId(), teamCode,
+                "The selected user is not part of the team.");
+
+        // Swap roles
+        newLeaderUserTeam.setRole(TeamRoleEnum.LEADER);
+        currentUserTeam.setRole(TeamRoleEnum.MEMBER);
+
+        // Save changes
+        userTeamRepository.save(currentUserTeam);
+        userTeamRepository.save(newLeaderUserTeam);
+    }
+
+    private UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage) {
+        UserTeam userTeam = userTeamRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User team relationship not found"));
+        if (!userTeam.getTeam().getCode().equalsIgnoreCase(teamCode)) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+        return userTeam;
     }
 
     @Override

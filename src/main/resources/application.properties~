@@ -9,7 +9,7 @@ spring.cache.type=redis
 
 spring.datasource.url=jdbc:mysql://localhost:3306/mentor_bridge
 spring.datasource.username=root
-spring.datasource.password=123456
+spring.datasource.password=123456789
 
 
 # JPA settings

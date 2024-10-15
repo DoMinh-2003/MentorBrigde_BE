@@ -8,4 +8,5 @@ public interface ITeamService {
     void inviteMember(String email, String teamCode);
     void addMemberToTeam(User user, String teamCode);
     void acceptInvitation(String token, String teamCode);
+    void setTeamLeader(String email, String teamCode);
 }
