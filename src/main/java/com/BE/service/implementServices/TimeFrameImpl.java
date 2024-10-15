@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.SemesterEnum;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.entity.Config;
 import com.BE.model.entity.Semester;
@@ -168,120 +169,54 @@ public class TimeFrameImpl implements ITimeFrameService {
     public TotalHoursResponse calculateTotalHours(ScheduleRequest scheduleRequest) {
         Duration totalDuration = Duration.ZERO; // Khởi tạo biến tổng
         Map<String, List<String>> messages = new LinkedHashMap<>();
-        Boolean error = false;
+        boolean error = false;
         String overallErrorMessage = null;
+
         Config config = configRepository.findFirstBy();
         Duration minTimeSlotDuration = config.getMinTimeSlotDuration();
 
-        if(minTimeSlotDuration.compareTo(scheduleRequest.getSlotDuration()) > 0){
-            overallErrorMessage = "Error: Remaining time is not sufficient to create a new slot";
+        // Kiểm tra thời gian slot
+        if (minTimeSlotDuration.compareTo(scheduleRequest.getSlotDuration()) > 0) {
+            overallErrorMessage = "Error: Not enough time  to create slot";
             error = true;
         }
 
-        // Lặp qua từng ngày trong ScheduleRequest
-        List<TimeFrameRequest> allTimeFrames = new ArrayList<>();
-        allTimeFrames.addAll(scheduleRequest.getMonday());
-        allTimeFrames.addAll(scheduleRequest.getTuesday());
-        allTimeFrames.addAll(scheduleRequest.getWednesday());
-        allTimeFrames.addAll(scheduleRequest.getThursday());
-        allTimeFrames.addAll(scheduleRequest.getFriday());
-        allTimeFrames.addAll(scheduleRequest.getSaturday());
-        allTimeFrames.addAll(scheduleRequest.getSunday());
-
-        // Kiểm tra tính hợp lệ cho mỗi khung thời gian
-        for (TimeFrameRequest timeFrameRequest : allTimeFrames) {
-            if (!timeFrameRequest.getStartTime().isBefore(timeFrameRequest.getEndTime())) {
-                throw new IllegalArgumentException("Invalid time frame: Start time must be before end time.");
-            }
-        }
-
-        // Kiểm tra khung giờ chồng lấp theo từng ngày
+        // Kiểm tra các khung thời gian cho từng ngày trong tuần
         String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        List<List<TimeFrameRequest>> dailySlots = Arrays.asList(
-                scheduleRequest.getMonday(),
-                scheduleRequest.getTuesday(),
-                scheduleRequest.getWednesday(),
-                scheduleRequest.getThursday(),
-                scheduleRequest.getFriday(),
-                scheduleRequest.getSaturday(),
-                scheduleRequest.getSunday()
-        );
+        for (String day : daysOfWeek) {
+            List<TimeFrameRequest> dailySlot = getTimeFramesForDay(scheduleRequest, DayOfWeek.valueOf(day.toUpperCase()));
+            error |= checkForOverlappingAndIdenticalFrames(dailySlot, messages, day);
+            error |= checkDayDuration(dailySlot, error, messages, day, minTimeSlotDuration, scheduleRequest.getSlotDuration());
 
-        for (int i = 0; i < dailySlots.size(); i++) {
-            List<TimeFrameRequest> dailySlot = dailySlots.get(i);
-            for (int j = 0; j < dailySlot.size(); j++) {
-                TimeFrameRequest currentFrame = dailySlot.get(j);
-                for (int t = j + 1; t < dailySlot.size(); t++) {
-                    TimeFrameRequest comparingFrame = dailySlot.get(t);
-
-                    // Kiểm tra xem hai khoảng thời gian có giống hệt nhau không
-                    if (currentFrame.getStartTime().equals(comparingFrame.getStartTime()) &&
-                            currentFrame.getEndTime().equals(comparingFrame.getEndTime())) {
-                        messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
-                                .add("Error: Time frames are identical: " + currentFrame + " and " + comparingFrame + ".");
-                        error = true;
-                    }else{
-                        // Kiểm tra xem hai khoảng thời gian có chồng lấp không
-                        if (currentFrame.getStartTime().isBefore(comparingFrame.getEndTime()) &&
-                                comparingFrame.getStartTime().isBefore(currentFrame.getEndTime())) {
-                            messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
-                                    .add("Error: Time frames overlap between " + currentFrame + " and " + comparingFrame + ".");
-                            error = true;
-                        }
-                    }
-                }
-            }
         }
 
+        // Lấy thông tin kỳ học từ cơ sở dữ liệu
+        Semester semester = semesterRepository.findByStatus(SemesterEnum.UPCOMING)
+                .orElseThrow(() -> new NotFoundException("Semester not found"));
 
-        // Tính toán tổng thời gian
-        for (TimeFrameRequest timeFrameRequest : allTimeFrames) {
-            totalDuration = totalDuration.plus(calculateHoursForDay(Collections.singletonList(timeFrameRequest)));
+        LocalDateTime semesterStartDate = semester.getDateFrom();
+        LocalDateTime semesterEndDate = semester.getDateTo();
+
+        // Lặp qua từng ngày trong kỳ học
+        for (LocalDateTime date = semesterStartDate; !date.isAfter(semesterEndDate); date = date.plusDays(1)) {
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+            List<TimeFrameRequest> timeFramesForDay = getTimeFramesForDay(scheduleRequest, dayOfWeek);
+
+            totalDuration = totalDuration.plus(calculateDurationSemester(timeFramesForDay, messages, dayOfWeek.name(), minTimeSlotDuration, scheduleRequest.getSlotDuration()));
         }
 
-
-
-        // Kiểm tra phần thời gian dư cho mỗi ngày
-        for (int i = 0; i < dailySlots.size(); i++) {
-            List<TimeFrameRequest> dailySlot = dailySlots.get(i);
-            if (!dailySlot.isEmpty()) {
-                // Tính tổng thời gian cho ngày
-
-                for (TimeFrameRequest slot : dailySlot) {
-                    Duration dailyTotalDuration = Duration.ZERO;
-                    dailyTotalDuration = dailyTotalDuration.plus(Duration.between(slot.getStartTime(), slot.getEndTime()));
-
-
-                // Kiểm tra xem thời gian tổng có phải là bội số của slotDuration không
-                Duration slotDuration = scheduleRequest.getSlotDuration();
-                if (dailyTotalDuration.toMinutes() % slotDuration.toMinutes() != 0) {
-                    // Tính phần dư
-                    Duration remainingDuration = dailyTotalDuration.minus(slotDuration.multipliedBy(dailyTotalDuration.toMinutes() / slotDuration.toMinutes()));
-
-                    if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
-                        messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
-                                .add("Error: Remaining time is not sufficient to create a new slot for " + daysOfWeek[i] + ".");
-                        error = true;
-                    } else {
-                        // Gửi cảnh báo đến client
-                        messages.computeIfAbsent(daysOfWeek[i], k -> new ArrayList<>())
-                                .add("Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + daysOfWeek[i] + ". Do you want to create a slot with this time?");
-                    }
-                }
-                }
-            }
-        }
-
-        int totalHour = (int) totalDuration.toHours();
+        // Kiểm tra giờ tối thiểu
+        int totalHours = (int) totalDuration.toHours();
         int totalMinutes = (int) (totalDuration.toMinutes() % 60);
 
-        if (totalHour < config.getMinimumHours()) {
-            overallErrorMessage = "Your total hours are " + totalHour + "h" + totalMinutes + "p" + " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.";
+        if (totalHours < config.getMinimumHours()) {
+            overallErrorMessage = "Your total hours are " + totalHours + "h" + totalMinutes + "m" +
+                    " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.";
             error = true;
         }
 
         return TotalHoursResponse.builder()
-                .currentTotalHours(totalHour + "h" + totalMinutes + "p")
+                .currentTotalHours(totalHours + "h" + totalMinutes + "m")
                 .minimumRequiredHours(config.getMinimumHours())
                 .messages(messages)
                 .overallErrorMessage(overallErrorMessage)
@@ -289,16 +224,75 @@ public class TimeFrameImpl implements ITimeFrameService {
                 .build();
     }
 
-    private Duration calculateHoursForDay(List<TimeFrameRequest> timeFrameRequests) {
-        Duration totalDuration = Duration.ZERO;
+    private boolean checkForOverlappingAndIdenticalFrames(List<TimeFrameRequest> timeFrames, Map<String, List<String>> messages, String dayOfWeek) {
+        boolean error = false;
 
-        for (TimeFrameRequest timeFrame : timeFrameRequests) {
-            // Tính toán số giờ giữa startTime và endTime
-            Duration duration = Duration.between(timeFrame.getStartTime(), timeFrame.getEndTime());
-            totalDuration = totalDuration.plus(duration); // Cộng dồn Duration
+        for (int j = 0; j < timeFrames.size(); j++) {
+            TimeFrameRequest currentFrame = timeFrames.get(j);
+            for (int t = j + 1; t < timeFrames.size(); t++) {
+                TimeFrameRequest comparingFrame = timeFrames.get(t);
+
+                // Kiểm tra xem hai khoảng thời gian có giống hệt nhau không
+                if (currentFrame.getStartTime().equals(comparingFrame.getStartTime()) &&
+                        currentFrame.getEndTime().equals(comparingFrame.getEndTime())) {
+                    messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                            .add("Error: Time frames are identical: " + currentFrame + " and " + comparingFrame + ".");
+                    error = true;
+                } else {
+                    // Kiểm tra xem hai khoảng thời gian có chồng lấp không
+                    if (currentFrame.getStartTime().isBefore(comparingFrame.getEndTime()) &&
+                            comparingFrame.getStartTime().isBefore(currentFrame.getEndTime())) {
+                        messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                                .add("Error: Time frames overlap between " + currentFrame + " and " + comparingFrame + ".");
+                        error = true;
+                    }
+                }
+            }
         }
 
-        return totalDuration;
+        return error;
+    }
+
+    private boolean checkDayDuration(List<TimeFrameRequest> timeFramesForDay, boolean error, Map<String, List<String>> messages, String dayOfWeek, Duration minTimeSlotDuration, Duration slotDuration) {
+        Duration dailyTotalDuration = Duration.ZERO;
+
+        // Kiểm tra tính hợp lệ và tính tổng thời gian cho khung giờ
+        for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
+            if (!isValidTimeFrame(timeFrameRequest)) {
+                throw new BadRequestException("Invalid time frame for " + dayOfWeek + ": Start time must be before end time.");
+            }
+
+            Duration duration = Duration.between(timeFrameRequest.getStartTime(), timeFrameRequest.getEndTime());
+            dailyTotalDuration = dailyTotalDuration.plus(duration);
+        }
+
+        // Kiểm tra phần thời gian dư cho từng khung giờ
+        if (dailyTotalDuration.toMinutes() % slotDuration.toMinutes() != 0) {
+            Duration remainingDuration = dailyTotalDuration.minus(slotDuration.multipliedBy(dailyTotalDuration.toMinutes() / slotDuration.toMinutes()));
+            if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
+                messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                        .add("Error: Remaining time is not sufficient to create a new slot for " + dayOfWeek + ".");
+                error = true;
+            } else {
+                messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                        .add("Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + dayOfWeek + ". Do you want to create a slot with this time?");
+            }
+        }
+
+        return error;
+    }
+
+    private Duration calculateDurationSemester(List<TimeFrameRequest> timeFramesForDay, Map<String, List<String>> messages, String dayOfWeek, Duration minTimeSlotDuration, Duration slotDuration) {
+        Duration dailyTotalDuration = Duration.ZERO;
+
+        // Kiểm tra tính hợp lệ và tính tổng thời gian cho khung giờ
+        for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
+            Duration duration = Duration.between(timeFrameRequest.getStartTime(), timeFrameRequest.getEndTime());
+            dailyTotalDuration = dailyTotalDuration.plus(duration);
+        }
+
+
+        return dailyTotalDuration;
     }
 
 }

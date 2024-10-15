@@ -1,7 +1,7 @@
 package com.BE.exception.handler;
 
 import com.BE.exception.exceptions.AppException;
-import org.apache.coyote.BadRequestException;
+import com.BE.exception.exceptions.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +39,7 @@ public class AuthenExceptionHandler {
     public ResponseEntity handlerBadRequestException(BadRequestException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity handlerAppException(AppException ex) {
