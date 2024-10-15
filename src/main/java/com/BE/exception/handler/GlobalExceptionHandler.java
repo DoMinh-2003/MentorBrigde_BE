@@ -117,7 +117,7 @@ public class GlobalExceptionHandler {
         return responseHandler.response(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
     }
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalStateException ex) {
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
         return responseHandler.response(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
     }
 
