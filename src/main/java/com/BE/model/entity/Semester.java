@@ -38,6 +38,7 @@ public class Semester {
     SemesterEnum status;
 
     LocalDateTime createdAt;
+
     @Column(name = "is_deleted")
     boolean isDeleted = false;
 
@@ -51,5 +52,8 @@ public class Semester {
 
     @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
     Set<Topic> topics = new HashSet<>();
+
+    @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
+    Set<TimeFrame> timeFrames = new HashSet<>();
 
 }

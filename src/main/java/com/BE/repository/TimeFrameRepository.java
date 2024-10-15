@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
 
 
-    List<TimeFrame>  findByMentorIdOrderByTimeFrameFromAsc(UUID id);
+    List<TimeFrame>  findByMentorIdAndSemesterIdOrderByTimeFrameFromAsc(UUID MentorId,UUID semesterId);
 
 
 

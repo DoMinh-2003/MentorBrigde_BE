@@ -35,4 +35,9 @@ public class TimeFrame {
     @JsonIgnore
     User mentor;
 
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    @JsonIgnore
+    Semester semester;
+
 }
