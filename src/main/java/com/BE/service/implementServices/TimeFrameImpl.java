@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.SemesterEnum;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.entity.Config;
 import com.BE.model.entity.Semester;
 import com.BE.model.entity.TimeFrame;
@@ -46,12 +47,12 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         // Lấy thông tin kỳ học từ cơ sở dữ liệu
         Semester semester = semesterRepository.findByStatus(SemesterEnum.UPCOMING)
-                .orElseThrow(() -> new RuntimeException("Semester not found"));
+                .orElseThrow(() -> new NotFoundException("Semester not found"));
 
         TotalHoursResponse  totalHoursResponse = calculateTotalHours(scheduleRequest);
 
         if(totalHoursResponse.getError()) {
-            throw new RuntimeException("Fail Create Semester");
+            throw new NotFoundException("Fail Create Semester");
         }
 
         LocalDateTime semesterStartDate = semester.getDateFrom();
@@ -73,7 +74,7 @@ public class TimeFrameImpl implements ITimeFrameService {
             Config config = configRepository.findFirstBy();
 
             for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
-                List<TimeFrame> slots = splitTimeFrame(accountUtils.getCurrentUser(), timeFrameRequest, scheduleRequest.getSlotDuration(), config.getMinTimeSlotDuration(), date);
+                List<TimeFrame> slots = splitTimeFrame(accountUtils.getCurrentUser(),semester , timeFrameRequest, scheduleRequest.getSlotDuration(), config.getMinTimeSlotDuration(), date);
 
                 // Lưu các slot vào CSDL
                 timeFrameRepository.saveAll(slots);
@@ -109,7 +110,7 @@ public class TimeFrameImpl implements ITimeFrameService {
         }
     }
 
-    private List<TimeFrame> splitTimeFrame(User user, TimeFrameRequest timeFrameRequest, Duration slotDuration, Duration minTimeSlotDuration, LocalDateTime date) {
+    private List<TimeFrame> splitTimeFrame(User user, Semester semester, TimeFrameRequest timeFrameRequest, Duration slotDuration, Duration minTimeSlotDuration, LocalDateTime date) {
 
         List<TimeFrame> slots = new ArrayList<>();
 
@@ -125,6 +126,7 @@ public class TimeFrameImpl implements ITimeFrameService {
             timeFrame.setTimeFrameFrom(slotStart);
             timeFrame.setTimeFrameTo(nextSlotEnd);
             timeFrame.setMentor(user);
+            timeFrame.setSemester(semester);
 
             slots.add(timeFrame);
 
@@ -136,6 +138,7 @@ public class TimeFrameImpl implements ITimeFrameService {
             TimeFrame remainderSlot = new TimeFrame();
             remainderSlot.setTimeFrameFrom(slotStart);
             remainderSlot.setTimeFrameTo(slotEnd);
+            remainderSlot.setSemester(semester);
             slots.add(remainderSlot);
         }
 
@@ -144,7 +147,10 @@ public class TimeFrameImpl implements ITimeFrameService {
     @Override
     public Map<LocalDate, List<TimeFrame>> getGroupedTimeSlots(UUID id) {
 
-        List<TimeFrame> timeSlots = timeFrameRepository.findByMentorIdOrderByTimeFrameFromAsc(id);
+        Semester semester = semesterRepository.findByStatus(SemesterEnum.ACTIVE)
+                .orElseThrow(() -> new NotFoundException("Semester not found"));
+
+        List<TimeFrame> timeSlots = timeFrameRepository.findByMentorIdAndSemesterIdOrderByTimeFrameFromAsc(id,semester.getId());
 
         Map<LocalDate, List<TimeFrame>> groupedTimeSlots = new TreeMap<>();
 

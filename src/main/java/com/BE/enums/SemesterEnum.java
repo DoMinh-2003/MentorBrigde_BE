@@ -12,5 +12,8 @@ public enum SemesterEnum {
     INACTIVE,
 
     @Schema(description = "The semester is upcoming")
-    UPCOMING
+    UPCOMING,
+
+    DELETED
+
 }
