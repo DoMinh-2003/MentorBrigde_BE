@@ -72,5 +72,10 @@ public class StudentController {
         teamService.acceptInvitation(token, teamCode);
         return ResponseEntity.ok( "Accept invitation successfully!");
     }
+    @PutMapping("/team/set-leader")
+    public ResponseEntity<Object> setLeader(@RequestParam String email, @RequestParam String teamCode) {
+        teamService.setTeamLeader(email, teamCode);
+        return ResponseEntity.ok( "Set leader successfully!");
+    }
 }
 
