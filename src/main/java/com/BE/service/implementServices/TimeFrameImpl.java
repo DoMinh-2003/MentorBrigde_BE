@@ -66,11 +66,8 @@ public class TimeFrameImpl implements ITimeFrameService {
             // Lấy danh sách TimeFrameRequest cho ngày hiện tại
             List<TimeFrameRequest> timeFramesForDay = getTimeFramesForDay(scheduleRequest, dayOfWeek);
 
-            for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
-                if (!isValidTimeFrame(timeFrameRequest)) {
-                    return "Invalid time frame for " + dayOfWeek + ": Start time must be before end time.";
-                }
-            }
+
+
             // Chia các khung giờ thành các slot dựa trên Duration
             Config config = configRepository.findFirstBy();
 
@@ -259,7 +256,9 @@ public class TimeFrameImpl implements ITimeFrameService {
         // Kiểm tra tính hợp lệ và tính tổng thời gian cho khung giờ
         for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
             if (!isValidTimeFrame(timeFrameRequest)) {
-                throw new BadRequestException("Invalid time frame for " + dayOfWeek + ": Start time must be before end time.");
+                messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                        .add("Error: Invalid time frame for " + dayOfWeek + ": Start time must be before end time.");
+                error = true;
             }
 
             Duration duration = Duration.between(timeFrameRequest.getStartTime(), timeFrameRequest.getEndTime());
@@ -287,8 +286,10 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         // Kiểm tra tính hợp lệ và tính tổng thời gian cho khung giờ
         for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
-            Duration duration = Duration.between(timeFrameRequest.getStartTime(), timeFrameRequest.getEndTime());
-            dailyTotalDuration = dailyTotalDuration.plus(duration);
+            if (isValidTimeFrame(timeFrameRequest)) {
+                Duration duration = Duration.between(timeFrameRequest.getStartTime(), timeFrameRequest.getEndTime());
+                dailyTotalDuration = dailyTotalDuration.plus(duration);
+            }
         }
 
 
