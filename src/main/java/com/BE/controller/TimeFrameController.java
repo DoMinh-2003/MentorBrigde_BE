@@ -34,7 +34,7 @@ public class TimeFrameController {
 
     @PostMapping("validate")
     public ResponseEntity calculateTotalHours(@Valid @RequestBody ScheduleRequest scheduleRequest){
-        return  responseHandler.response(200,"CalculateTotalHours Schedule Successfully", iTimeFrameService.calculateTotalHours(scheduleRequest));
+        return  responseHandler.response(400,"CalculateTotalHours Schedule Successfully", iTimeFrameService.calculateTotalHours(scheduleRequest));
     }
 
     @GetMapping("{id}")
