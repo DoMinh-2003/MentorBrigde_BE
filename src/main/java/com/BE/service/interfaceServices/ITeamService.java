@@ -2,6 +2,9 @@ package com.BE.service.interfaceServices;
 
 import com.BE.model.entity.Team;
 import com.BE.model.entity.User;
+import com.BE.model.entity.UserTeam;
+
+import java.util.UUID;
 
 public interface ITeamService {
     Team createTeam();
@@ -10,4 +13,5 @@ public interface ITeamService {
     void acceptInvitation(String token, String teamCode);
     void setTeamLeader(String email, String teamCode);
     Team getTeamByCode(String teamCode);
+    UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage);
 }

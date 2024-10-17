@@ -121,7 +121,7 @@ public class TeamServiceImpl implements ITeamService {
         userTeamRepository.save(newLeaderUserTeam);
     }
 
-    private UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage) {
+    public UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage) {
         UserTeam userTeam = userTeamRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User team relationship not found"));
         if (!userTeam.getTeam().getCode().equalsIgnoreCase(teamCode)) {

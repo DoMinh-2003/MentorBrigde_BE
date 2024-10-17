@@ -41,6 +41,6 @@ public class Team {
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
     @JsonIgnore
-    Set<UserBooking> userBookings = new HashSet<>();
+    Set<Booking> bookings = new HashSet<>();
 
 }
