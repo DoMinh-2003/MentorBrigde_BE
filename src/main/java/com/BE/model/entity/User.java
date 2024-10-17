@@ -81,9 +81,13 @@
         @JsonIgnore
         Set<TimeFrame> timeFrames = new HashSet<>();
 
-        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+        @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
         @JsonIgnore
-        Set<UserBooking> userBookings = new HashSet<>();
+        Set<Booking> bookingsStudent = new HashSet<>();
+
+        @OneToMany(mappedBy = "mentor", cascade = CascadeType.ALL)
+        @JsonIgnore
+        Set<Booking> bookingsMentor = new HashSet<>();
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {

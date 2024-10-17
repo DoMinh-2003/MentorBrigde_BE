@@ -29,16 +29,23 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     BookingStatusEnum status;
     LocalDateTime createdAt;
-    String createdBy;
 
     @ManyToOne
     @JoinColumn(name = "time_frame_id")
     @JsonIgnore
     TimeFrame timeFrame;
 
-    @OneToMany(mappedBy = "booking")
-    @JsonIgnore
-    Set<UserBooking> userBookings = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    User student;
+
+    @ManyToOne
+    @JoinColumn(name = "mentor_id")
+    User mentor;
+
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    Team team;
 
     @OneToMany(mappedBy = "booking")
     Set<BookingHistory> bookingHistories = new HashSet<>();
