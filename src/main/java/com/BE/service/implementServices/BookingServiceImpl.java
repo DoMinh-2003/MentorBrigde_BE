@@ -91,6 +91,7 @@ public class BookingServiceImpl implements IBookingService {
         BookingHistory bookingHistory =  logBookingHistory(booking, BookingStatusEnum.REQUESTED);
         booking.getBookingHistories().add(bookingHistory);
         booking = bookingRepository.save(booking);
+        bookingHistoryRepository.save(bookingHistory);
         return booking;
     }
 
