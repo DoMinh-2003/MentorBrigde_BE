@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.TeamRoleEnum;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.EmailDetail;
 import com.BE.model.entity.Semester;
 import com.BE.model.entity.Team;
@@ -131,14 +132,17 @@ public class TeamServiceImpl implements ITeamService {
 
     @Override
     public void addMemberToTeam(User user, String teamCode) {
-        Team team = teamRepository.findByCode(teamCode).orElse(null);
+        Team team = teamRepository.findByCode(teamCode).orElseThrow(() -> new NotFoundException("Team not found"));
         UserTeam userTeam = new UserTeam();
         userTeam.setUser(user);
         userTeam.setTeam(team);
         userTeam.setRole(TeamRoleEnum.MEMBER);
         userTeamRepository.save(userTeam);
     }
-
+    @Override
+    public Team getTeamByCode(String teamCode) {
+        return teamRepository.findByCode(teamCode).orElseThrow(() -> new NotFoundException("Team not found"));
+    }
     private String generateGroupCode(Semester semester) {
         // Count the number of teams in the current semester
         int teamCount = teamRepository.countBySemester(semester);

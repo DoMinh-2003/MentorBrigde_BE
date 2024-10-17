@@ -2,10 +2,7 @@ package com.BE.model.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +11,8 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -40,4 +39,7 @@ public class TimeFrame {
     @JsonIgnore
     Semester semester;
 
+    @OneToMany(mappedBy = "timeFrame")
+    @JsonIgnore
+    Set<Booking> userBookings = new HashSet<>();
 }

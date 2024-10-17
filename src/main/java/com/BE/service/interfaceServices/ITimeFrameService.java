@@ -17,4 +17,6 @@ public interface ITimeFrameService {
     Map<LocalDate, List<TimeFrame>>  getGroupedTimeSlots(UUID id);
 
     TotalHoursResponse calculateTotalHours(ScheduleRequest scheduleRequest);
+
+    TimeFrame getById(UUID id);
 }

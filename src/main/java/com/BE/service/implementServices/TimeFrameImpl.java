@@ -295,6 +295,10 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         return dailyTotalDuration;
     }
-
+    @Override
+    public TimeFrame getById(UUID id){
+        return timeFrameRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("TimeFrame not found"));
+    }
 }
 
