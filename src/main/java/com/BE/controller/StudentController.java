@@ -1,9 +1,10 @@
 package com.BE.controller;
 
-import com.BE.model.entity.User;
+import com.BE.enums.BookingTypeEnum;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.UserResponse;
 import com.BE.service.JWTService;
+import com.BE.service.interfaceServices.IBookingService;
 import com.BE.service.interfaceServices.IStudentService;
 import com.BE.service.interfaceServices.ITeamService;
 import com.BE.utils.ResponseHandler;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("api")
 @SecurityRequirement(name = "api")
@@ -25,14 +28,18 @@ public class StudentController {
     private final IStudentService studentService;
     private final ITeamService teamService;
     private final ResponseHandler<Object> responseHandler;
+    private final IBookingService bookingService;
     @Autowired
     private JWTService jwtService;
     public StudentController(IStudentService studentService,
                              ITeamService teamService,
-                             ResponseHandler<Object> responseHandler) {
+                             ResponseHandler<Object> responseHandler,
+                             IBookingService bookingService) {
         this.studentService = studentService;
         this.teamService = teamService;
         this.responseHandler = responseHandler;
+        this.bookingService = bookingService;
+
     }
 
     @GetMapping("/students")
@@ -47,7 +54,8 @@ public class StudentController {
 
         // Check if the search term is provided
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(new DataResponseDTO<>(400, "Search term is required.", null));
+            return ResponseEntity.badRequest().body(new DataResponseDTO<>(400,
+                    "Search term is required.", null));
         }
 
         // Search by name or code
@@ -63,19 +71,33 @@ public class StudentController {
     }
 
     @PostMapping("/team/invite")
-    public ResponseEntity<Object> inviteMember(@RequestParam String email, @RequestParam String teamCode) {
+    public ResponseEntity<Object> inviteMember(@RequestParam String email,
+                                               @RequestParam String teamCode) {
         teamService.inviteMember(email, teamCode);
         return ResponseEntity.ok( "Invite member successfully!");
     }
     @GetMapping("/accept-invitation")
-    public ResponseEntity<Object> acceptInvitation(@RequestParam String token, @RequestParam String teamCode) {
+    public ResponseEntity<Object> acceptInvitation(@RequestParam String token,
+                                                   @RequestParam String teamCode) {
         teamService.acceptInvitation(token, teamCode);
         return ResponseEntity.ok( "Accept invitation successfully!");
     }
     @PutMapping("/team/set-leader")
-    public ResponseEntity<Object> setLeader(@RequestParam String email, @RequestParam String teamCode) {
+    public ResponseEntity<Object> setLeader(@RequestParam String email,
+                                            @RequestParam String teamCode) {
         teamService.setTeamLeader(email, teamCode);
         return ResponseEntity.ok( "Set leader successfully!");
+    }
+    @PostMapping("/booking")
+    public ResponseEntity<DataResponseDTO<Object>> createBooking(@RequestParam UUID timeFrameId,
+                                                                 @RequestParam(required = false) String teamCode,
+                                                                 @RequestParam BookingTypeEnum type) {
+        return responseHandler.response(200, "Create booking success!",
+                bookingService.createBooking(timeFrameId, teamCode, type));
+    }
+    @GetMapping("/team")
+    public ResponseEntity<DataResponseDTO<Object>> getTeam(@RequestParam String teamCode) {
+        return responseHandler.response(200, "Get team success!", teamService.getTeamByCode(teamCode));
     }
 }
 

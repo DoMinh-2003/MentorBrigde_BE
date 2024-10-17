@@ -29,15 +29,18 @@ public class Team {
     LocalDate createdAt;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "semester_id")
     Semester semester;
 
     @OneToMany(mappedBy = "team")
-    @JsonIgnore
     Set<UserTeam> userTeams = new HashSet<>();
-
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
     Set<Topic> topics = new HashSet<>();
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    @JsonIgnore
+    Set<UserBooking> userBookings = new HashSet<>();
 
 }
