@@ -2,6 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.RoleEnum;
 import com.BE.enums.SemesterEnum;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.ConfigMapper;
 import com.BE.mapper.UserMapper;
@@ -9,6 +10,7 @@ import com.BE.model.entity.Config;
 import com.BE.model.entity.Semester;
 import com.BE.model.entity.User;
 import com.BE.model.request.ConfigRequest;
+import com.BE.model.response.ConfigResponse;
 import com.BE.model.response.UserResponse;
 import com.BE.repository.ConfigRepository;
 import com.BE.repository.SemesterRepository;
@@ -19,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -108,10 +109,25 @@ public class AdminServiceImpl implements IAdminService {
     }
 
     @Override
-    public Config createConfig(ConfigRequest configRequest) {
-        Config config = configMapper.toConfig(configRequest);
-        config.setMinTimeSlotDuration(configRequest.getMinTimeSlotDuration());
-        return configRepository.save(config);
+    public ConfigResponse createConfig(ConfigRequest configRequest) {
+        Config config = configRepository.findFirstBy();
+        if(config != null){
+            throw new BadRequestException("Config đã tồn tại");
+        }
+        config = configMapper.toConfig(configRequest);
+        return configMapper.toConfigResponse(configRepository.save(config));
+    }
+
+    @Override
+    public ConfigResponse getConfig() {
+        return configMapper.toConfigResponse(configRepository.findFirstBy());
+    }
+
+    @Override
+    public ConfigResponse updateConfig(UUID id, ConfigRequest configRequest) {
+        Config config  = configRepository.findById(id).orElseThrow(() -> new NotFoundException("Config not found"));
+        configMapper.toUpdateConfig(config, configRequest);
+        return configMapper.toConfigResponse(configRepository.save(config));
     }
 
 

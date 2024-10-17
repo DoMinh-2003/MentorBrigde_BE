@@ -9,10 +9,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/config")
@@ -26,8 +25,16 @@ public class ConfigController {
     ResponseHandler responseHandler;
 
     @PostMapping
-    public ResponseEntity createConfig(@RequestBody ConfigRequest configRequest){
+    public ResponseEntity createConfig(@Valid @RequestBody ConfigRequest configRequest){
         return  responseHandler.response(200,"Create New Config Successfully",iAdminService.createConfig(configRequest));
+    }
+    @PutMapping("{id}")
+    public ResponseEntity updateConfig(@PathVariable UUID id,@Valid @RequestBody ConfigRequest configRequest){
+        return  responseHandler.response(200,"Update Config Successfully",iAdminService.updateConfig(id, configRequest));
+    }
+    @GetMapping
+    public ResponseEntity getConfig(){
+        return  responseHandler.response(200,"Get Config Successfully",iAdminService.getConfig());
     }
 
 }

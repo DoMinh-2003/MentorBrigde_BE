@@ -174,7 +174,7 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         // Kiểm tra thời gian slot
         if (minTimeSlotDuration.compareTo(scheduleRequest.getSlotDuration()) > 0) {
-            overallErrorMessage = "Error: Not enough time  to create slot";
+            overallErrorMessage = "Error: Không đủ thời gian để tạo slot";
             error = true;
         }
 
@@ -207,8 +207,8 @@ public class TimeFrameImpl implements ITimeFrameService {
         int totalMinutes = (int) (totalDuration.toMinutes() % 60);
 
         if (totalHours < config.getMinimumHours()) {
-            overallErrorMessage = "Your total hours are " + totalHours + "h" + totalMinutes + "m" +
-                    " not enough for the semester. You need at least " + config.getMinimumHours() + " hours.";
+            overallErrorMessage = "Tổng số giờ của bạn là " + totalHours + "h" + totalMinutes + "m" +
+                    " không đủ cho học kỳ. Bạn cần ít nhất " + config.getMinimumHours() + " giờ.";
             error = true;
         }
 
@@ -233,14 +233,14 @@ public class TimeFrameImpl implements ITimeFrameService {
                 if (currentFrame.getStartTime().equals(comparingFrame.getStartTime()) &&
                         currentFrame.getEndTime().equals(comparingFrame.getEndTime())) {
                     messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                            .add("Error: Time frames are identical: " + currentFrame + " and " + comparingFrame + ".");
+                            .add("Error: Khung thời gian giống hệt nhau: " + currentFrame + " và " + comparingFrame + ".");
                     error = true;
                 } else {
                     // Kiểm tra xem hai khoảng thời gian có chồng lấp không
                     if (currentFrame.getStartTime().isBefore(comparingFrame.getEndTime()) &&
                             comparingFrame.getStartTime().isBefore(currentFrame.getEndTime())) {
                         messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                                .add("Error: Time frames overlap between " + currentFrame + " and " + comparingFrame + ".");
+                                .add("Error: Khung thời gian chồng chéo giữa " + currentFrame + " và " + comparingFrame + ".");
                         error = true;
                     }
                 }
@@ -257,7 +257,7 @@ public class TimeFrameImpl implements ITimeFrameService {
         for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
             if (!isValidTimeFrame(timeFrameRequest)) {
                 messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                        .add("Error: Invalid time frame for " + dayOfWeek + ": Start time must be before end time.");
+                        .add("Error: Khung thời gian cho " + dayOfWeek + " không hợp lệ: Thời gian bắt đầu phải trước thời gian kết thúc.");
                 error = true;
             }
 
@@ -270,11 +270,11 @@ public class TimeFrameImpl implements ITimeFrameService {
             Duration remainingDuration = dailyTotalDuration.minus(slotDuration.multipliedBy(dailyTotalDuration.toMinutes() / slotDuration.toMinutes()));
             if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
                 messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                        .add("Error: Remaining time is not sufficient to create a new slot for " + dayOfWeek + ".");
+                        .add("Error: Thời gian còn lại không đủ để tạo một slot mới cho " + dayOfWeek + ".");
                 error = true;
             } else {
                 messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                        .add("Warning: You have " + remainingDuration.toMinutes() + " minutes remaining for " + dayOfWeek + ". Do you want to create a slot with this time?");
+                        .add("Warning: Bạn còn " + remainingDuration.toMinutes() + " phút cho " + dayOfWeek + ". Bạn có muốn tạo một slot với thời gian này không?");
             }
         }
 
