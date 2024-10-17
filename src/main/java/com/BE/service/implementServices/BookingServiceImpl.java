@@ -51,7 +51,7 @@ public class BookingServiceImpl implements IBookingService {
         }
 
         Booking booking = createNewBooking(timeFrame, currentUser, mentor, team, type);
-        logBookingHistory(booking, BookingStatusEnum.REQUESTED);
+
         return booking;
     }
 
@@ -88,16 +88,18 @@ public class BookingServiceImpl implements IBookingService {
         } else {
             booking.setStudent(currentUser);
         }
-        bookingRepository.save(booking);
+        BookingHistory bookingHistory =  logBookingHistory(booking, BookingStatusEnum.REQUESTED);
+        booking.getBookingHistories().add(bookingHistory);
+        booking = bookingRepository.save(booking);
+        bookingHistoryRepository.save(bookingHistory);
         return booking;
     }
 
-    private void logBookingHistory(Booking booking, BookingStatusEnum status) {
+    private BookingHistory logBookingHistory(Booking booking, BookingStatusEnum status) {
         BookingHistory bookingHistory = new BookingHistory();
         bookingHistory.setBooking(booking);
         bookingHistory.setType(status);
         bookingHistory.setCreatedAt(LocalDateTime.now());
-
-        bookingHistoryRepository.save(bookingHistory);
+        return bookingHistory;
     }
 }
