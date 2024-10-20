@@ -19,4 +19,5 @@ public class UserResponse {
     String dayOfBirth;
     String phone;
     String username;
+        String teamCode;
 }
