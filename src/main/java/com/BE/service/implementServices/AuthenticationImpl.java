@@ -6,6 +6,7 @@ import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.mapper.UserMapper;
 import com.BE.model.EmailDetail;
+import com.BE.model.entity.UserTeam;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
@@ -108,6 +109,8 @@ public class AuthenticationImpl implements AuthenticationService {
 //            }
 
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
+            Optional<UserTeam> userTeam = user.getUserTeams().stream().findFirst();
+            userTeam.ifPresent(team -> authenticationResponse.setTeamCode(team.getTeam().getCode()));
             authenticationResponse.setToken(jwtService.generateToken(user,UUID.randomUUID().toString(),false));
             return authenticationResponse;
         } catch (FirebaseAuthException e)

@@ -30,6 +30,7 @@ public class AuthenticationResponse {
      String studentCode;
      String gender;
      String dayOfBirth;
+     String teamCode;
 
 }
 
