@@ -53,7 +53,10 @@ public class TeamServiceImpl implements ITeamService {
     @Transactional
     public Team createTeam() {
         User user = accountUtils.getCurrentUser();
-
+        // Check if user already has a team
+        if( userTeamRepository.existsByUserId(user.getId())){
+            throw new IllegalArgumentException("You already have a team. Please out of it before creating a new one.");
+        }
         // Create a new team
         Team team = new Team();
         // Generate team code and set it
@@ -83,13 +86,13 @@ public class TeamServiceImpl implements ITeamService {
         emailDetail.setSubject("You're Invited to Join the Team: " + teamCode);
         emailDetail.setButtonValue("Accept Invitation");
         emailDetail.setFullName(user.getFullName());
-        emailDetail.setLink("http://localhost:8080/api/accept-invitation?token=" + jwtService.generateToken(user) + "&teamCode=" + teamCode);
+        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
         Runnable r = () -> emailService.sendMailTemplate(emailDetail);
         new Thread(r).start();
     }
     @Override
-    public void acceptInvitation(String token, String teamCode) {
-        User user = jwtService.getUserByToken(token);
+    public void acceptInvitation(String teamCode) {
+        User user = accountUtils.getCurrentUser();
         if (user != null && !userTeamRepository.existsByUserId(user.getId())) {
             addMemberToTeam(user, teamCode);
         }else {
@@ -160,5 +163,11 @@ public class TeamServiceImpl implements ITeamService {
         // Generate ID: G + semester symbol + year + 3-digit counter
 
         return "G" + symbol + year + formattedCounter;
+    }
+    @Override
+    public UserTeam getCurrentUserTeam() {
+        User user = accountUtils.getCurrentUser();
+        return userTeamRepository.findByUserId(user.getId()).orElseThrow(() -> new NotFoundException("User team relationship not found"));
+
     }
 }
