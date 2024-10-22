@@ -86,7 +86,7 @@ public class TeamServiceImpl implements ITeamService {
         emailDetail.setSubject("You're Invited to Join the Team: " + teamCode);
         emailDetail.setButtonValue("Accept Invitation");
         emailDetail.setFullName(user.getFullName());
-        emailDetail.setLink("http://localhost:8080/api/accept-invitation?token=" + jwtService.generateToken(user) + "&teamCode=" + teamCode);
+        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
         Runnable r = () -> emailService.sendMailTemplate(emailDetail);
         new Thread(r).start();
     }
