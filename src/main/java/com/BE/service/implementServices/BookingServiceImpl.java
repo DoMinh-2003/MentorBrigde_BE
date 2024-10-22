@@ -4,7 +4,9 @@ import com.BE.enums.BookingTypeEnum;
 import com.BE.enums.BookingStatusEnum;
 import com.BE.enums.SemesterEnum;
 import com.BE.enums.TeamRoleEnum;
+import com.BE.mapper.UserMapper;
 import com.BE.model.entity.*;
+import com.BE.model.response.UserResponse;
 import com.BE.repository.BookingHistoryRepository;
 import com.BE.repository.BookingRepository;
 import com.BE.service.interfaceServices.IBookingService;
@@ -24,25 +26,31 @@ public class BookingServiceImpl implements IBookingService {
     private final AccountUtils accountUtils;
     private final ITeamService teamService;
     private final BookingHistoryRepository bookingHistoryRepository;
+    private final UserMapper userMapper;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               ITimeFrameService timeFrameService,
                               AccountUtils accountUtils,
                               ITeamService teamService,
-                              BookingHistoryRepository bookingHistoryRepository) {
+                              BookingHistoryRepository bookingHistoryRepository,
+                              UserMapper userMapper) {
         this.bookingRepository = bookingRepository;
         this.timeFrameService = timeFrameService;
         this.accountUtils = accountUtils;
         this.teamService = teamService;
         this.bookingHistoryRepository = bookingHistoryRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
-    public Booking createBooking(UUID timeFrameId, String teamCode, BookingTypeEnum type) {
+    public Booking createBooking(UUID timeFrameId, BookingTypeEnum type) {
         TimeFrame timeFrame = timeFrameService.getById(timeFrameId);
 
         validateTimeFrame(timeFrame);
         User currentUser = accountUtils.getCurrentUser();
+        UserTeam userTeam = teamService.getCurrentUserTeam();
+        String teamCode = userTeam.getTeam().getCode();
+
         User mentor = timeFrame.getMentor();
 
         Team team = null;

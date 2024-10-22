@@ -76,10 +76,9 @@ public class StudentController {
         teamService.inviteMember(email, teamCode);
         return ResponseEntity.ok( "Invite member successfully!");
     }
-    @GetMapping("/accept-invitation")
-    public ResponseEntity<Object> acceptInvitation(@RequestParam String token,
-                                                   @RequestParam String teamCode) {
-        teamService.acceptInvitation(token, teamCode);
+    @PutMapping("/accept-invitation")
+    public ResponseEntity<Object> acceptInvitation(@RequestParam String teamCode) {
+        teamService.acceptInvitation(teamCode);
         return ResponseEntity.ok( "Accept invitation successfully!");
     }
     @PutMapping("/team/set-leader")
@@ -90,10 +89,9 @@ public class StudentController {
     }
     @PostMapping("/booking")
     public ResponseEntity<DataResponseDTO<Object>> createBooking(@RequestParam UUID timeFrameId,
-                                                                 @RequestParam(required = false) String teamCode,
                                                                  @RequestParam BookingTypeEnum type) {
         return responseHandler.response(200, "Create booking success!",
-                bookingService.createBooking(timeFrameId, teamCode, type));
+                bookingService.createBooking(timeFrameId, type));
     }
     @GetMapping("/team")
     public ResponseEntity<DataResponseDTO<Object>> getTeam(@RequestParam String teamCode) {
