@@ -1,28 +1,26 @@
-package com.BE.model.entity;
-
+package com.BE.model.response;
 
 import com.BE.enums.BookingStatusEnum;
 import com.BE.enums.BookingTypeEnum;
+import com.BE.model.entity.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-@Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Booking {
-    @Id
-    @UuidGenerator
+@Builder
+public class BookingResponse {
+
     UUID id;
 
     @Enumerated(EnumType.STRING)
@@ -33,28 +31,21 @@ public class Booking {
 
     LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "time_frame_id")
-    @JsonIgnore
+
     TimeFrame timeFrame;
 
-    @ManyToOne
-    @JoinColumn(name = "student_id")
+
     User student;
 
-    @ManyToOne
-    @JoinColumn(name = "mentor_id")
+
     User mentor;
 
-    @ManyToOne
-    @JoinColumn(name = "team_id")
+
     Team team;
 
-    @OneToMany(mappedBy = "booking")
+
     Set<BookingHistory> bookingHistories = new HashSet<>();
 
-    @ManyToOne
-    @JoinColumn(name = "semester_id")
-    @JsonIgnore
+
     Semester semester;
 }

@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.SemesterEnum;
+import com.BE.enums.TimeFrameStatus;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.entity.Config;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -40,6 +44,8 @@ public class TimeFrameImpl implements ITimeFrameService {
 
     @Autowired
     DateNowUtils dateNowUtils;
+
+
 
 
     @Override
@@ -108,6 +114,22 @@ public class TimeFrameImpl implements ITimeFrameService {
         }
     }
 
+
+
+    private void scheduleTimeFrame(TimeFrame timeFrame) {
+
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long delay = timeFrame.getTimeFrameFrom().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        executorService.schedule(() -> {
+            timeFrame.setTimeFrameStatus(TimeFrameStatus.EXPIRED);
+            timeFrameRepository.save(timeFrame);
+        }, delay, TimeUnit.MILLISECONDS);
+
+    }
     private List<TimeFrame> splitTimeFrame(User user, Semester semester, TimeFrameRequest timeFrameRequest, Duration slotDuration, Duration minTimeSlotDuration, LocalDateTime date) {
 
         List<TimeFrame> slots = new ArrayList<>();
@@ -125,6 +147,9 @@ public class TimeFrameImpl implements ITimeFrameService {
             timeFrame.setTimeFrameTo(nextSlotEnd);
             timeFrame.setMentor(user);
             timeFrame.setSemester(semester);
+            timeFrame.setTimeFrameStatus(TimeFrameStatus.AVAILABLE);
+
+            scheduleTimeFrame(timeFrame);
 
             slots.add(timeFrame);
 
@@ -137,6 +162,8 @@ public class TimeFrameImpl implements ITimeFrameService {
             remainderSlot.setTimeFrameFrom(slotStart);
             remainderSlot.setTimeFrameTo(slotEnd);
             remainderSlot.setSemester(semester);
+            remainderSlot.setTimeFrameStatus(TimeFrameStatus.AVAILABLE);
+            scheduleTimeFrame(remainderSlot);
             slots.add(remainderSlot);
         }
 
