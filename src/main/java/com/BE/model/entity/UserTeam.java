@@ -22,6 +22,7 @@ public class UserTeam {
     UUID id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id")
     User user;
 
