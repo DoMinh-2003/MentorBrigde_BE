@@ -16,4 +16,6 @@ public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
 
     Optional<TimeFrame> findById(UUID id);
 
+    List<TimeFrame>  findByMentorIdAndSemesterId(UUID MentorId, UUID semesterId);
+
 }

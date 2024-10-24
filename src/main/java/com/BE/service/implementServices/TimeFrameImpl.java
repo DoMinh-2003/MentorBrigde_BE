@@ -11,6 +11,7 @@ import com.BE.model.entity.User;
 import com.BE.model.request.ScheduleRequest;
 import com.BE.model.request.TimeFrameRequest;
 import com.BE.model.response.TotalHoursResponse;
+import com.BE.model.response.WeeklyTimeFrameResponse;
 import com.BE.repository.ConfigRepository;
 import com.BE.repository.SemesterRepository;
 import com.BE.repository.TimeFrameRepository;
@@ -50,7 +51,7 @@ public class TimeFrameImpl implements ITimeFrameService {
 
     @Override
     public String createSchedule(ScheduleRequest scheduleRequest) {
-
+       User user = accountUtils.getCurrentUser();
 
         // Lấy thông tin kỳ học từ cơ sở dữ liệu
         Semester semester = semesterRepository.findByStatus(SemesterEnum.UPCOMING)
@@ -60,6 +61,12 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         if(totalHoursResponse.getError()) {
             throw new NotFoundException("Fail Create Semester");
+        }
+
+        List<TimeFrame> existingTimeFrames =  timeFrameRepository.findByMentorIdAndSemesterId(user.getId(),semester.getId());
+
+        if (!existingTimeFrames.isEmpty()) {
+            timeFrameRepository.deleteAll(existingTimeFrames);
         }
 
         LocalDateTime semesterStartDate = semester.getDateFrom();
@@ -78,7 +85,7 @@ public class TimeFrameImpl implements ITimeFrameService {
             Config config = configRepository.findFirstBy();
 
             for (TimeFrameRequest timeFrameRequest : timeFramesForDay) {
-                List<TimeFrame> slots = splitTimeFrame(accountUtils.getCurrentUser(),semester , timeFrameRequest, scheduleRequest.getSlotDuration(), config.getMinTimeSlotDuration(), date);
+                List<TimeFrame> slots = splitTimeFrame(user ,semester , timeFrameRequest, scheduleRequest.getSlotDuration(), config.getMinTimeSlotDuration(), date);
 
                 // Lưu các slot vào CSDL
                 timeFrameRepository.saveAll(slots);
@@ -322,6 +329,49 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         return dailyTotalDuration;
     }
+
+    @Override
+    public WeeklyTimeFrameResponse getWeeklyTimeFrameForMentor(String semesterCode) {
+        User user = accountUtils.getCurrentUser();
+
+        Semester semester = semesterCode != null
+                ? semesterRepository.findSemesterByCode(semesterCode)
+                : semesterRepository.findFirstByOrderByCreatedAtDesc();
+
+        // Lấy tất cả TimeFrame của mentor trong kỳ
+        List<TimeFrame> timeFrames = timeFrameRepository.findByMentorIdAndSemesterId(user.getId(), semester.getId());
+
+        // Chuyển đổi dữ liệu thành khung giờ theo từng ngày trong tuần
+        WeeklyTimeFrameResponse weeklyResponse = new WeeklyTimeFrameResponse();
+
+        // Xác định trạng thái của kỳ
+        weeklyResponse.setSemesterUpcoming(semester.getStatus().equals(SemesterEnum.UPCOMING));
+
+        // Sử dụng Map để nhóm các khung giờ theo ngày
+        Map<DayOfWeek, Set<TimeFrameRequest>> timeFrameMap = new EnumMap<>(DayOfWeek.class);
+
+        for (TimeFrame tf : timeFrames) {
+            DayOfWeek dayOfWeek = tf.getTimeFrameFrom().getDayOfWeek();
+            TimeFrameRequest timeFrameRequest = new TimeFrameRequest(tf.getTimeFrameFrom().toLocalTime(), tf.getTimeFrameTo().toLocalTime());
+
+            // Nhóm khung giờ theo từng ngày
+            timeFrameMap.computeIfAbsent(dayOfWeek, k -> new HashSet<>()).add(timeFrameRequest);
+        }
+
+        // Chuyển đổi dữ liệu từ Map vào weeklyResponse
+        weeklyResponse.setMonday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.MONDAY, Collections.emptySet())));
+        weeklyResponse.setTuesday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.TUESDAY, Collections.emptySet())));
+        weeklyResponse.setWednesday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.WEDNESDAY, Collections.emptySet())));
+        weeklyResponse.setThursday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.THURSDAY, Collections.emptySet())));
+        weeklyResponse.setFriday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.FRIDAY, Collections.emptySet())));
+        weeklyResponse.setSaturday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.SATURDAY, Collections.emptySet())));
+        weeklyResponse.setSunday(new ArrayList<>(timeFrameMap.getOrDefault(DayOfWeek.SUNDAY, Collections.emptySet())));
+
+        return weeklyResponse;
+    }
+
+
+
     @Override
     public TimeFrame getById(UUID id){
         return timeFrameRepository.findById(id)

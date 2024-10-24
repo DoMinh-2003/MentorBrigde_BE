@@ -3,6 +3,7 @@ package com.BE.service.interfaceServices;
 import com.BE.model.entity.TimeFrame;
 import com.BE.model.request.ScheduleRequest;
 import com.BE.model.response.TotalHoursResponse;
+import com.BE.model.response.WeeklyTimeFrameResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,4 +20,6 @@ public interface ITimeFrameService {
     TotalHoursResponse calculateTotalHours(ScheduleRequest scheduleRequest);
 
     TimeFrame getById(UUID id);
+
+    WeeklyTimeFrameResponse getWeeklyTimeFrameForMentor(String semesterCode);
 }
