@@ -26,11 +26,24 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
                                                                     @Param("month") int month);
 
 
-    @Query("SELECT b FROM Booking b JOIN b.team t JOIN t.userTeams ut WHERE (b.student = :student OR ut.user = :student) AND b.status = :status AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
-    List<Booking> findByStudentOrTeamMemberAndStatusAndSemesterAndTimeFrameMonth(@Param("student") User student,
-                                                                                 @Param("status") BookingStatusEnum status,
-                                                                                 @Param("semester") Semester semester,
-                                                                                 @Param("month") int month);
+//    @Query("SELECT b FROM Booking b JOIN b.team t JOIN t.userTeams ut WHERE (b.student = :student OR ut.user = :student) AND b.status = :status AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
+//    List<Booking> findByStudentOrTeamMemberAndStatusAndSemesterAndTimeFrameMonth(@Param("student") User student,
+//                                                                                 @Param("status") BookingStatusEnum status,
+//                                                                                 @Param("semester") Semester semester,
+//                                                                                 @Param("month") int month);
+
+    @Query("SELECT b FROM Booking b " +
+            "LEFT JOIN b.team t " +
+            "LEFT JOIN t.userTeams ut " +
+            "WHERE (b.student = :student OR ut.user = :student) " +
+            "AND b.status = :status " +
+            "AND b.semester = :semester " +
+            "AND MONTH(b.timeFrame.timeFrameFrom) = :month")
+    List<Booking> findByStudentOrTeamMemberAndStatusAndSemesterAndTimeFrameMonth(
+            @Param("student") User student,
+            @Param("status") BookingStatusEnum status,
+            @Param("semester") Semester semester,
+            @Param("month") int month);
 
 
     Optional<Booking> findByIdAndStatus(UUID id, BookingStatusEnum status);
