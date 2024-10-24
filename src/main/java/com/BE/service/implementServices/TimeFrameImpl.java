@@ -347,6 +347,11 @@ public class TimeFrameImpl implements ITimeFrameService {
         // Xác định trạng thái của kỳ
         weeklyResponse.setSemesterUpcoming(semester.getStatus().equals(SemesterEnum.UPCOMING));
 
+        if(timeFrames.isEmpty()){
+            weeklyResponse.setUpdateSchedule(false);
+            return weeklyResponse;
+        }
+
         // Sử dụng Map để nhóm các khung giờ theo ngày
         Map<DayOfWeek, Set<TimeFrameRequest>> timeFrameMap = new EnumMap<>(DayOfWeek.class);
 
