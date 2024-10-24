@@ -22,7 +22,7 @@ public class WeeklyTimeFrameResponse {
     List<TimeFrameRequest> saturday = new ArrayList<>();
     List<TimeFrameRequest> sunday = new ArrayList<>();
 
-    boolean isUpdateSchedule;
+    boolean isUpdateSchedule = true;
 
     boolean semesterUpcoming;
 }
