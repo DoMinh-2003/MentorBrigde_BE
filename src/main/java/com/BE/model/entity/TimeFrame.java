@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 
+import com.BE.enums.TimeFrameStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -28,6 +29,10 @@ public class TimeFrame {
 
     LocalDateTime timeFrameFrom;
     LocalDateTime timeFrameTo;
+
+
+    @Enumerated(EnumType.STRING)
+    TimeFrameStatus timeFrameStatus;
 
     @ManyToOne
     @JoinColumn(name = "mentor_id")
