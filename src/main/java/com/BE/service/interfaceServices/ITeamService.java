@@ -10,7 +10,7 @@ public interface ITeamService {
     Team createTeam();
     void inviteMember(String email, String teamCode);
     void addMemberToTeam(User user, String teamCode);
-    void acceptInvitation(String teamCode);
+    void acceptInvitation(String token,String teamCode);
     void setTeamLeader(String email, String teamCode);
     Team getTeamByCode(String teamCode);
     UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage);
