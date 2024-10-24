@@ -44,7 +44,8 @@
         @Column(unique = true)
         String email;
 
-        String avatar;
+        @Column(length = 550)
+        private String avatar;
 
         @Column(unique = true)
         String username;
