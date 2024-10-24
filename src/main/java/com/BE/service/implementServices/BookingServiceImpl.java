@@ -73,13 +73,13 @@ public class BookingServiceImpl implements IBookingService {
 
         validateTimeFrame(timeFrame);
         User currentUser = accountUtils.getCurrentUser();
-        UserTeam userTeam = teamService.getCurrentUserTeam();
-        String teamCode = userTeam.getTeam().getCode();
-
         User mentor = timeFrame.getMentor();
 
         Team team = null;
         if (type.equals(BookingTypeEnum.TEAM)) {
+            UserTeam userTeam = teamService.getCurrentUserTeam();
+            String teamCode = userTeam.getTeam().getCode();
+
             team = validateTeamBooking(currentUser, teamCode);
         }
 
