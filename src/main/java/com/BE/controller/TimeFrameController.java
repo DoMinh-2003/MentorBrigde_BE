@@ -42,6 +42,12 @@ public class TimeFrameController {
         return  responseHandler.response(200,"Get Schedule Successfully", iTimeFrameService.getGroupedTimeSlots(id));
     }
 
+    @GetMapping("weeklyTimeFrame")
+    public ResponseEntity getGroupedTimeSlots(@RequestParam(required = false) String semesterCode) {
+        return  responseHandler.response(200,"Get Weekly TimeFrame  Successfully", iTimeFrameService.getWeeklyTimeFrameForMentor(semesterCode));
+    }
+
+
 
 
 
