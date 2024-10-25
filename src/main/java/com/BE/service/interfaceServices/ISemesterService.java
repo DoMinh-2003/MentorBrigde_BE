@@ -6,6 +6,7 @@ import com.BE.model.request.SemesterRequest;
 import com.BE.model.response.SemesterResponse;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ISemesterService {
@@ -14,6 +15,6 @@ public interface ISemesterService {
         SemesterResponse updateSemester(UUID semesterID,SemesterRequest semesterRequest);
         Page<SemesterResponse> searchSemesters(String code, String name, SemesterEnum status, int page, int size);
         SemesterResponse deleteSemester(UUID id);
-
+        List<SemesterResponse> getSemestersByStatus(SemesterEnum status);
 }
 

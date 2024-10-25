@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,8 +26,7 @@ public interface SemesterRepository extends JpaRepository<Semester, UUID> {
     Semester findSemesterByCode(String Code);
 
     Optional<Semester> findByStatus(SemesterEnum semesterEnum);
-
-
+    List<Semester> findSemestersByStatus(SemesterEnum semesterEnum);
     @Query("SELECT s FROM Semester s WHERE " +
             "s.isDeleted = false AND " +
             "(:code IS NULL OR :code = '' OR LOWER(s.code) LIKE LOWER(CONCAT('%', :code, '%'))) " +
