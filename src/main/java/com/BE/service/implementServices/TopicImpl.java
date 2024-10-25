@@ -5,6 +5,7 @@ import com.BE.enums.RoleEnum;
 import com.BE.enums.SemesterEnum;
 import com.BE.enums.StatusEnum;
 import com.BE.enums.TopicEnum;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.FileMapper;
 import com.BE.mapper.TopicMapper;
@@ -75,8 +76,15 @@ public class TopicImpl implements ITopicService {
         topic.setCreatedAt(dateNowUtils.dateNow());
         if(topicRequest.getTeamId() != null) {
             Team team = teamRepository.findById(topicRequest.getTeamId()).orElseThrow(() -> new NotFoundException("Team not found"));
-            team.getTopics().add(topic);
-            topic.setTeam(team);
+            if (team.getTopics().stream().noneMatch(existingTopic ->
+                    TopicEnum.ACTIVE.equals(existingTopic.getStatus()) || TopicEnum.PENDING.equals(existingTopic.getStatus()))) {
+                team.getTopics().add(topic);
+                topic.setTeam(team);
+            } else {
+                throw new BadRequestException("Cannot add topic because an ACTIVE or PENDING topic already exists in the team.");
+            }
+
+
         };
 
         topic.setCreator(creator);
