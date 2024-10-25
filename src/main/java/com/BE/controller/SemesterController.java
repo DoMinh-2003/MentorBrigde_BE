@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -53,6 +54,12 @@ public class SemesterController {
         return responseHandler.response(200, "Get Data Successfully", data);
     }
 
-
+    @GetMapping("status")
+    public ResponseEntity getSemestersByStatus(@RequestParam SemesterEnum status) {
+        {
+            List<SemesterResponse> data = semesterService.getSemestersByStatus(status);
+            return responseHandler.response(200, "Get Data Successfully", data);
+        }
+    }
 
 }

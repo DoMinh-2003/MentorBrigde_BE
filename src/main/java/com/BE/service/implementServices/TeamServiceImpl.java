@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -169,5 +170,10 @@ public class TeamServiceImpl implements ITeamService {
         User user = accountUtils.getCurrentUser();
         return userTeamRepository.findByUserId(user.getId()).orElseThrow(() -> new NotFoundException("User team relationship not found"));
 
+    }
+    @Override
+    public List<Team> getTeamsByUserIdAndRole(UUID userId, TeamRoleEnum role){
+        List<UserTeam>  userTeams = userTeamRepository.findByUserIdAndRole(userId,role);
+        return userTeams.stream().map(UserTeam::getTeam).toList();
     }
 }

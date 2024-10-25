@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -143,5 +144,8 @@ public class SemesterImpl implements ISemesterService {
     public Semester getCurrentSemester() {
         return semesterRepository.findByStatus(SemesterEnum.UPCOMING).orElseThrow(() -> new NotFoundException("Semester Not Found"));
     }
-
+    @Override
+    public List<SemesterResponse> getSemestersByStatus(SemesterEnum status) {
+        return semesterRepository.findSemestersByStatus(status).stream().map(semesterMapper::toSemesterResponse).toList();
+    }
 }
