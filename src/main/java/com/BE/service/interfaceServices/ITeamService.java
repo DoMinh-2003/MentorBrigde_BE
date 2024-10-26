@@ -17,5 +17,5 @@ public interface ITeamService {
     Team getTeamByCode(String teamCode);
     UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage);
     UserTeam getCurrentUserTeam();
-    List<Team> getTeamsByUserIdAndRole(UUID userId, TeamRoleEnum role);
+    List<Team> getTeamsByUserIdAndRole(TeamRoleEnum role);
 }

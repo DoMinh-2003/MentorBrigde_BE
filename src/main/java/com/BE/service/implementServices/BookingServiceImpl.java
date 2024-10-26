@@ -79,7 +79,6 @@ public class BookingServiceImpl implements IBookingService {
         if (type.equals(BookingTypeEnum.TEAM)) {
             UserTeam userTeam = teamService.getCurrentUserTeam();
             String teamCode = userTeam.getTeam().getCode();
-
             team = validateTeamBooking(currentUser, teamCode);
         }
 
@@ -299,5 +298,15 @@ public class BookingServiceImpl implements IBookingService {
         bookingHistory.setType(status);
         bookingHistory.setCreatedAt(LocalDateTime.now());
         return bookingHistory;
+    }
+
+    @Override
+    public Booking getBookingById(UUID id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Booking Not Found"));
+    }
+    @Override
+    public Booking saveBooking(Booking booking){
+        return bookingRepository.save(booking);
     }
 }

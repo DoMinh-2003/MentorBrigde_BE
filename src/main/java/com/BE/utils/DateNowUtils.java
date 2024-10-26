@@ -1,6 +1,7 @@
 package com.BE.utils;
 import com.BE.exception.exceptions.DateException;
 import com.BE.model.request.SemesterRequest;
+import com.google.api.client.util.DateTime;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -44,10 +45,16 @@ public class DateNowUtils {
 
     }
 
+    public DateTime convertLocalDateTimeToDateTime(LocalDateTime localDateTime) {
+        // Step 1: Convert LocalDateTime to ZonedDateTime
+        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh"));
 
+        // Step 2: Convert ZonedDateTime to ISO 8601 String
+        String isoDateTime = zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-
-
+        // Step 3: Create DateTime object from ISO 8601 String
+        return new DateTime(isoDateTime);
+    }
 
 
 }

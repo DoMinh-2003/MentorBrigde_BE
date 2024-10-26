@@ -20,10 +20,10 @@ public class TeamController {
     ResponseHandler responseHandler;
     @Autowired
     private ITeamService teamService;
-    @GetMapping("/team/{mentorId}")
-    public ResponseEntity<DataResponseDTO<Object>> getTeamByMentorId(@PathVariable UUID mentorId) {
+    @GetMapping("/team/mentorId")
+    public ResponseEntity<DataResponseDTO<Object>> getTeamByMentorId() {
         return responseHandler.response(200,"Create New Schedule Successfully",
-                teamService.getTeamsByUserIdAndRole(mentorId, TeamRoleEnum.MENTOR));
+                teamService.getTeamsByUserIdAndRole(TeamRoleEnum.MENTOR));
 
     }
 }

@@ -22,4 +22,6 @@ public interface IBookingService {
     List<BookingResponse> getBooking(BookingTypeEnum type, BookingStatusEnum status);
 
     BookingResponse updateStatus(BookingStatusRequest statusRequest);
+    Booking getBookingById(UUID id);
+    Booking saveBooking(Booking booking);
 }

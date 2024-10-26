@@ -172,8 +172,9 @@ public class TeamServiceImpl implements ITeamService {
 
     }
     @Override
-    public List<Team> getTeamsByUserIdAndRole(UUID userId, TeamRoleEnum role){
-        List<UserTeam>  userTeams = userTeamRepository.findByUserIdAndRole(userId,role);
+    public List<Team> getTeamsByUserIdAndRole(TeamRoleEnum role){
+        User user = accountUtils.getCurrentUser();
+        List<UserTeam>  userTeams = userTeamRepository.findByUserIdAndRole(user.getId(),role);
         return userTeams.stream().map(UserTeam::getTeam).toList();
     }
 }
