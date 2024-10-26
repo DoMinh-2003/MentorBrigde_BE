@@ -252,6 +252,9 @@ public class BookingServiceImpl implements IBookingService {
         if(timeFrame.getTimeFrameStatus().equals(TimeFrameStatus.BOOKED)){
             throw new IllegalArgumentException("SLot này đã được booking");
         }
+        if(timeFrame.getTimeFrameStatus().equals(TimeFrameStatus.EXPIRED)){
+            throw new IllegalArgumentException("SLot này đã qua thời gian hiện tại");
+        }
         if (bookingRepository.existsByTimeFrameIdAndStatus(timeFrame.getId(), BookingStatusEnum.ACCEPTED)) {
             throw new IllegalArgumentException("The time frame is already booked.");
         }

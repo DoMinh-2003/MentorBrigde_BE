@@ -296,21 +296,21 @@ public class TimeFrameImpl implements ITimeFrameService {
             }
 
             Duration duration = Duration.between(timeFrameRequest.getStartTime(), timeFrameRequest.getEndTime());
-            dailyTotalDuration = dailyTotalDuration.plus(duration);
-        }
-
-        // Kiểm tra phần thời gian dư cho từng khung giờ
-        if (dailyTotalDuration.toMinutes() % slotDuration.toMinutes() != 0) {
-            Duration remainingDuration = dailyTotalDuration.minus(slotDuration.multipliedBy(dailyTotalDuration.toMinutes() / slotDuration.toMinutes()));
-            if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
-                messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                        .add("Error: Thời gian còn lại không đủ để tạo một slot mới cho " + dayOfWeek + ".");
-                error = true;
-            } else {
-                messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
-                        .add("Warning: Bạn còn " + remainingDuration.toMinutes() + " phút cho " + dayOfWeek + ". Bạn có muốn tạo một slot với thời gian này không?");
+            // Kiểm tra phần thời gian dư cho từng khung giờ
+            if (duration.toMinutes() % slotDuration.toMinutes() != 0) {
+                Duration remainingDuration = duration.minus(slotDuration.multipliedBy(duration.toMinutes() / slotDuration.toMinutes()));
+                if (remainingDuration.compareTo(minTimeSlotDuration) < 0) {
+                    messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                            .add("Error: Thời gian còn lại không đủ để tạo một slot mới cho " + dayOfWeek + ".");
+                    error = true;
+                } else {
+                    messages.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
+                            .add("Warning: Bạn còn " + remainingDuration.toMinutes() + " phút cho " + dayOfWeek + ". Bạn có muốn tạo một slot với thời gian này không?");
+                }
             }
         }
+
+
 
         return error;
     }
