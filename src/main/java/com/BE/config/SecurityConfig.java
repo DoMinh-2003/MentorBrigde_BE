@@ -49,7 +49,9 @@ public class SecurityConfig  {
             "/api/refresh",
             "/api/logout",
             "/api/accept-invitation",
-            "/api/admin/upload-csv"
+            "/api/admin/upload-csv",
+            "/authorize",
+            "/oauth2callback"
 
     };
 

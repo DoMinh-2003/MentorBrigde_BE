@@ -3,6 +3,7 @@ package com.BE.controller;
 import com.BE.enums.BookingTypeEnum;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.UserResponse;
+import com.BE.service.GoogleMeetService;
 import com.BE.service.JWTService;
 import com.BE.service.interfaceServices.IBookingService;
 import com.BE.service.interfaceServices.IStudentService;
@@ -31,6 +32,8 @@ public class StudentController {
     private final IBookingService bookingService;
     @Autowired
     private JWTService jwtService;
+    @Autowired
+    private GoogleMeetService googleMeetService;
     public StudentController(IStudentService studentService,
                              ITeamService teamService,
                              ResponseHandler<Object> responseHandler,
@@ -97,5 +100,9 @@ public class StudentController {
     public ResponseEntity<DataResponseDTO<Object>> getTeam(@RequestParam String teamCode) {
         return responseHandler.response(200, "Get team success!", teamService.getTeamByCode(teamCode));
     }
+//    @PostMapping("/meet")
+//    public ResponseEntity<DataResponseDTO<Object>> getMeet() {
+//        return responseHandler.response(200, "Get meet success!", googleMeetService.createGoogleMeetLink());
+//    }
 }
 

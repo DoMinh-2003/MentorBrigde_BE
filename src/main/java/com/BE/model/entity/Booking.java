@@ -30,7 +30,7 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     BookingStatusEnum status;
-
+    String meetLink;
     LocalDateTime createdAt;
 
     @ManyToOne
