@@ -1,5 +1,6 @@
 package com.BE.service;
 
+import com.BE.enums.BookingTypeEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.model.entity.Booking;
 import com.BE.model.entity.User;
@@ -46,13 +47,13 @@ public class GoogleMeetService {
 
     private final AccountUtils accountUtils;
     private final DateNowUtils dateNowUtils;
-    private final IBookingService bookingService;
+
     public GoogleMeetService(AccountUtils accountUtils,
-                             DateNowUtils dateNowUtils,
-                             IBookingService bookingService) {
+                             DateNowUtils dateNowUtils
+                          ) {
         this.accountUtils = accountUtils;
         this.dateNowUtils = dateNowUtils;
-        this.bookingService = bookingService;
+
     }
 
     private static final String TOKENS_DIRECTORY_PATH = "src/main/resources";
@@ -70,7 +71,8 @@ public class GoogleMeetService {
     private String scope;
     @Value("${google.calendar.access.type}")
     private String accessType;
-
+    private static final String CREDENTIALS_FILE = "StoredCredentials";
+    private static final String USER_ROOT = "userroot";
 
     private Calendar googleCalendarService(Credential credential) throws GeneralSecurityException, IOException {
         return new Calendar.Builder(
@@ -81,22 +83,18 @@ public class GoogleMeetService {
                 .build();
     }
 
-    public String createGoogleMeetLink(CreateGoogleMeetRequest request){
-        User user = accountUtils.getCurrentUser();
-        Booking booking = bookingService.getBookingById(request.getBookingId());
-        try {
-            Credential credential = getStoredCredential(user.getEmail());
-            if (credential == null) {
-                // Nếu không có credential, yêu cầu người dùng đăng nhập
-                String authorizationUrl = getAuthorizationUrl();
-                throw new BadRequestException("Chưa có thông tin chứng thực, cần đăng nhập trước. Truy cập vào URL sau: "
-                        + authorizationUrl);
-            }
+    public String createGoogleMeetLink(Booking booking){
 
+        try {
+            Credential credential = getStoredCredential();
+            if (credential == null) {
+                throw new BadRequestException("Token not found");
+            }
             Calendar service = googleCalendarService(credential);
+
             Event event = new Event()
-                    .setSummary(request.getSummary())
-                    .setDescription(request.getDescription());
+                    .setSummary("Mentor Bridge Booking")
+                    .setDescription("Mentor: " + booking.getMentor().getFullName());
 
             // Set start and end time
             DateTime startDateTime = dateNowUtils.convertLocalDateTimeToDateTime(booking.getTimeFrame().getTimeFrameFrom());
@@ -121,19 +119,11 @@ public class GoogleMeetService {
                             .setConferenceSolutionKey(new ConferenceSolutionKey().setType("hangoutsMeet")));
             event.setConferenceData(conferenceData);
 
-            // Set attendees
-            List<String> attendees = request.getAttendees();
-            event.setAttendees(attendees.stream()
-                    .map(email -> new EventAttendee().setEmail(email))
-                    .collect(Collectors.toList()));
-
-
             // Insert the event into the user's primary calendar
             Event createdEvent = service.events().insert("primary", event)
                     .setConferenceDataVersion(1)
                     .execute();
-            booking.setMeetLink(createdEvent.getConferenceData().getEntryPoints().get(0).getUri());
-            bookingService.saveBooking(booking);
+
             return createdEvent.getConferenceData().getEntryPoints().get(0).getUri();
 
         } catch (GeneralSecurityException | IOException e) {
@@ -147,7 +137,7 @@ public class GoogleMeetService {
                 JacksonFactory.getDefaultInstance(),
                 clientId,
                 clientSecret,
-                Arrays.asList("https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.email"))
+                Collections.singleton(scope))
                 .setAccessType(accessType)
                 .build();
         return flow.newAuthorizationUrl()
@@ -165,14 +155,14 @@ public class GoogleMeetService {
         return jsonObject.get("email").getAsString();
     }
 
-    public String exchangeCodeForToken(String code) {
+    public void exchangeCodeForToken(String code) {
         try {
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     JSON_FACTORY,
                     clientId,
                     clientSecret,
-                    Arrays.asList("https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.email"))
+                    Collections.singleton(scope))
                     .setAccessType(accessType)
                     .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
                     .build();
@@ -181,23 +171,19 @@ public class GoogleMeetService {
                     .setRedirectUri(redirectUri)
                     .execute();
 
-            // Retrieve user's email using the access token
-            String userEmail = getUserEmailFromToken(tokenResponse.getAccessToken());
-
             // Use the user's email as the key when storing credentials
-            flow.createAndStoreCredential(tokenResponse, userEmail);
-            return userEmail;
+            flow.createAndStoreCredential(tokenResponse, USER_ROOT);
         } catch (IOException | GeneralSecurityException e) {
             throw new BadRequestException("Không thể đăng nhập");
         }
     }
 
 
-    public Credential getStoredCredential(String userEmail) throws IOException, GeneralSecurityException {
+    public Credential getStoredCredential() throws IOException, GeneralSecurityException {
         FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(new File(TOKENS_DIRECTORY_PATH));
-        DataStore<StoredCredential> dataStore = dataStoreFactory.getDataStore("StoredCredential");
+        DataStore<StoredCredential> dataStore = dataStoreFactory.getDataStore(CREDENTIALS_FILE);
 
-        if (dataStore.containsKey(userEmail)) {
+        if (dataStore.containsKey(USER_ROOT)) {
             // Sử dụng Builder để tạo Credential với đầy đủ thông tin cần thiết
             Credential credential = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                     .setJsonFactory(JSON_FACTORY)
@@ -207,11 +193,11 @@ public class GoogleMeetService {
                     .build();
 
             // Set access token và refresh token từ file lưu trữ
-            credential.setAccessToken(dataStore.get(userEmail).getAccessToken());
-            credential.setRefreshToken(dataStore.get(userEmail).getRefreshToken());
+            credential.setAccessToken(dataStore.get(USER_ROOT).getAccessToken());
+            credential.setRefreshToken(dataStore.get(USER_ROOT).getRefreshToken());
 
             // Kiểm tra và làm mới token nếu cần
-            if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60) {
+            if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60 ) {
                 credential.refreshToken();
             }
             return credential;

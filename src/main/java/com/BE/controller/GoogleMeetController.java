@@ -1,5 +1,6 @@
 package com.BE.controller;
 
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.model.request.CreateGoogleMeetRequest;
 import com.BE.service.GoogleMeetService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,16 +21,13 @@ public class GoogleMeetController {
     }
 
     @GetMapping("/oauth2callback")
-    public String handleOAuth2Callback(@RequestParam("code") String code) {
+    public void handleOAuth2Callback(@RequestParam("code") String code) {
         try {
-            return googleCalendarService.exchangeCodeForToken(code);
+            googleCalendarService.exchangeCodeForToken(code);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new BadRequestException("Không thể đăng nhập");
         }
-        return "Error";
+
     }
-    @PostMapping("/api/meet")
-    public String createMeet(@RequestBody CreateGoogleMeetRequest request) throws Exception {
-        return googleCalendarService.createGoogleMeetLink(request);
-    }
+
 }

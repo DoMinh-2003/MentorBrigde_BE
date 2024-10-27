@@ -14,6 +14,7 @@ import com.BE.repository.BookingHistoryRepository;
 import com.BE.repository.BookingRepository;
 import com.BE.repository.SemesterRepository;
 import com.BE.repository.TimeFrameRepository;
+import com.BE.service.GoogleMeetService;
 import com.BE.service.interfaceServices.IBookingService;
 import com.BE.service.interfaceServices.ITeamService;
 import com.BE.service.interfaceServices.ITimeFrameService;
@@ -39,7 +40,7 @@ public class BookingServiceImpl implements IBookingService {
     private final ITeamService teamService;
     private final BookingHistoryRepository bookingHistoryRepository;
     private final UserMapper userMapper;
-
+    private final GoogleMeetService googleMeetService;
 
     @Autowired
     PageUtil pageUtil;
@@ -58,13 +59,15 @@ public class BookingServiceImpl implements IBookingService {
                               AccountUtils accountUtils,
                               ITeamService teamService,
                               BookingHistoryRepository bookingHistoryRepository,
-                              UserMapper userMapper) {
+                              UserMapper userMapper,
+                              GoogleMeetService googleMeetService) {
         this.bookingRepository = bookingRepository;
         this.timeFrameService = timeFrameService;
         this.accountUtils = accountUtils;
         this.teamService = teamService;
         this.bookingHistoryRepository = bookingHistoryRepository;
         this.userMapper = userMapper;
+        this.googleMeetService = googleMeetService;
     }
 
     @Override
@@ -278,6 +281,12 @@ public class BookingServiceImpl implements IBookingService {
         booking.setSemester(timeFrame.getSemester());
         booking.setStatus(BookingStatusEnum.REQUESTED);
         booking.setType(type);
+        try{
+            String meetLink = googleMeetService.createGoogleMeetLink(booking);
+            booking.setMeetLink(meetLink);
+        }catch (Exception e){
+            throw new BadRequestException("Cannot create meet link");
+        }
         if (type.equals(BookingTypeEnum.TEAM)) {
             booking.setTeam(team);
         } else {
