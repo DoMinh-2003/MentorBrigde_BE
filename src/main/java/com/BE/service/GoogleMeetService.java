@@ -71,8 +71,12 @@ public class GoogleMeetService {
     private String scope;
     @Value("${google.calendar.access.type}")
     private String accessType;
-    private static final String CREDENTIALS_FILE = "StoredCredentials";
-    private static final String USER_ROOT = "userroot";
+    @Value("${google.calendar.credentials.file}")
+    private String credentialsFile;
+    @Value("${google.calendar.user.root}")
+    private String userRoot;
+    @Value("${google.calendar.token.url}")
+    private String tokenUrl;
 
     private Calendar googleCalendarService(Credential credential) throws GeneralSecurityException, IOException {
         return new Calendar.Builder(
@@ -145,16 +149,6 @@ public class GoogleMeetService {
                 .build();
     }
 
-    private String getUserEmailFromToken(String accessToken) throws IOException, GeneralSecurityException {
-        HttpRequestFactory requestFactory = GoogleNetHttpTransport.newTrustedTransport().createRequestFactory();
-        HttpRequest request = requestFactory.buildGetRequest(
-                new GenericUrl("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken));
-        HttpResponse response = request.execute();
-
-        JsonObject jsonObject = JsonParser.parseString(response.parseAsString()).getAsJsonObject();
-        return jsonObject.get("email").getAsString();
-    }
-
     public void exchangeCodeForToken(String code) {
         try {
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
@@ -172,7 +166,7 @@ public class GoogleMeetService {
                     .execute();
 
             // Use the user's email as the key when storing credentials
-            flow.createAndStoreCredential(tokenResponse, USER_ROOT);
+            flow.createAndStoreCredential(tokenResponse, userRoot);
         } catch (IOException | GeneralSecurityException e) {
             throw new BadRequestException("Không thể đăng nhập");
         }
@@ -181,20 +175,20 @@ public class GoogleMeetService {
 
     public Credential getStoredCredential() throws IOException, GeneralSecurityException {
         FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(new File(TOKENS_DIRECTORY_PATH));
-        DataStore<StoredCredential> dataStore = dataStoreFactory.getDataStore(CREDENTIALS_FILE);
+        DataStore<StoredCredential> dataStore = dataStoreFactory.getDataStore(credentialsFile);
 
-        if (dataStore.containsKey(USER_ROOT)) {
+        if (dataStore.containsKey(userRoot)) {
             // Sử dụng Builder để tạo Credential với đầy đủ thông tin cần thiết
             Credential credential = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                     .setJsonFactory(JSON_FACTORY)
                     .setTransport(GoogleNetHttpTransport.newTrustedTransport())
                     .setClientAuthentication(new ClientParametersAuthentication(clientId, clientSecret))
-                    .setTokenServerUrl(new GenericUrl("https://oauth2.googleapis.com/token"))
+                    .setTokenServerUrl(new GenericUrl(tokenUrl))
                     .build();
 
             // Set access token và refresh token từ file lưu trữ
-            credential.setAccessToken(dataStore.get(USER_ROOT).getAccessToken());
-            credential.setRefreshToken(dataStore.get(USER_ROOT).getRefreshToken());
+            credential.setAccessToken(dataStore.get(userRoot).getAccessToken());
+            credential.setRefreshToken(dataStore.get(userRoot).getRefreshToken());
 
             // Kiểm tra và làm mới token nếu cần
             if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60 ) {

@@ -16,6 +16,7 @@ import com.BE.repository.SemesterRepository;
 import com.BE.repository.TimeFrameRepository;
 import com.BE.service.GoogleMeetService;
 import com.BE.service.interfaceServices.IBookingService;
+import com.BE.service.interfaceServices.INotificationService;
 import com.BE.service.interfaceServices.ITeamService;
 import com.BE.service.interfaceServices.ITimeFrameService;
 import com.BE.utils.AccountUtils;
@@ -41,7 +42,7 @@ public class BookingServiceImpl implements IBookingService {
     private final BookingHistoryRepository bookingHistoryRepository;
     private final UserMapper userMapper;
     private final GoogleMeetService googleMeetService;
-
+    private final INotificationService notificationService;
     @Autowired
     PageUtil pageUtil;
 
@@ -60,7 +61,8 @@ public class BookingServiceImpl implements IBookingService {
                               ITeamService teamService,
                               BookingHistoryRepository bookingHistoryRepository,
                               UserMapper userMapper,
-                              GoogleMeetService googleMeetService) {
+                              GoogleMeetService googleMeetService,
+                              INotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.timeFrameService = timeFrameService;
         this.accountUtils = accountUtils;
@@ -68,6 +70,7 @@ public class BookingServiceImpl implements IBookingService {
         this.bookingHistoryRepository = bookingHistoryRepository;
         this.userMapper = userMapper;
         this.googleMeetService = googleMeetService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -77,16 +80,22 @@ public class BookingServiceImpl implements IBookingService {
         validateTimeFrame(timeFrame);
         User currentUser = accountUtils.getCurrentUser();
         User mentor = timeFrame.getMentor();
-
+        String name = currentUser.getFullName();
         Team team = null;
         if (type.equals(BookingTypeEnum.TEAM)) {
             UserTeam userTeam = teamService.getCurrentUserTeam();
             String teamCode = userTeam.getTeam().getCode();
             team = validateTeamBooking(currentUser, teamCode);
+            name = userTeam.getTeam().getCode();
         }
 
         Booking booking = createNewBooking(timeFrame, currentUser, mentor, team, type);
-
+        // Gửi thông báo cho mentor
+        notificationService.createNotification("Đặt lịch mentor",
+                name + " đặt lịch mentor " +
+                        timeFrame.getTimeFrameFrom() +
+                        " - " + timeFrame.getTimeFrameTo()
+                , mentor);
         return booking;
     }
 
