@@ -3,7 +3,6 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.RoleEnum;
 import com.BE.enums.SemesterEnum;
-import com.BE.enums.StatusEnum;
 import com.BE.enums.TopicEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
@@ -180,7 +179,7 @@ public class TopicImpl implements ITopicService {
             spec = spec.and(hasCreatorId(user.getId()));
         }else{
             spec = spec.and(hasSemesterId(semesterRepository.findByStatus(SemesterEnum.UPCOMING).get().getId()));
-            status = TopicEnum.INACTIVE;
+            status = TopicEnum.APPROVED;
         }
 
         if (status != null) {
@@ -206,7 +205,7 @@ public class TopicImpl implements ITopicService {
             if(topic.getTeam() != null) {
                 topic.setStatus(TopicEnum.ACTIVE);
             }else{
-                topic.setStatus(TopicEnum.INACTIVE);
+                topic.setStatus(TopicEnum.APPROVED);
             }
         }
         return topicMapper.toTopicResponse(topicRepository.save(topic));

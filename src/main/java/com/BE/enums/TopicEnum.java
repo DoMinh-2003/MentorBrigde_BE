@@ -5,5 +5,5 @@ public enum TopicEnum {
     ACCEPTED,
     REJECTED,
     ACTIVE,
-    INACTIVE
+    APPROVED
 }
