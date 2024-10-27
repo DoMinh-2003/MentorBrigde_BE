@@ -177,11 +177,14 @@ public class TopicImpl implements ITopicService {
         } else if (user.getRole().equals(RoleEnum.MENTOR)) {
             spec = spec.and(hasSemesterId(semester.getId()));
             spec = spec.and(hasCreatorId(user.getId()));
-        }else{
-            spec = spec.and(hasSemesterId(semesterRepository.findByStatus(SemesterEnum.UPCOMING).get().getId()));
-            status = TopicEnum.APPROVED;
-        }
-
+//        }else{
+//            spec = spec.and(hasSemesterId(semesterRepository.findByStatus(SemesterEnum.UPCOMING).get().getId()));
+//            status = TopicEnum.APPROVED;
+//        }
+        }else if (user.getRole().equals(RoleEnum.STUDENT)) {
+                spec = spec.and(hasSemesterId(semester.getId()));
+                spec = spec.and(hasStatus(TopicEnum.APPROVED));
+            }
         if (status != null) {
             spec = spec.and(hasStatus(status));
         }
