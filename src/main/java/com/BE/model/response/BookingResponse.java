@@ -25,7 +25,7 @@ public class BookingResponse {
 
     @Enumerated(EnumType.STRING)
     BookingTypeEnum type;
-
+    String meetLink;
     @Enumerated(EnumType.STRING)
     BookingStatusEnum status;
 
