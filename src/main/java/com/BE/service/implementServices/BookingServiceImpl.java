@@ -95,10 +95,9 @@ public class BookingServiceImpl implements IBookingService {
                 name + " đặt lịch mentor " +
                         timeFrame.getTimeFrameFrom() +
                         " - " + timeFrame.getTimeFrameTo()
-                , mentor);
+                , mentor, true);
         return booking;
     }
-
 
 
     @Override
@@ -224,35 +223,61 @@ public class BookingServiceImpl implements IBookingService {
         User user = accountUtils.getCurrentUser();
         Booking booking = bookingRepository.findByIdAndStatus(statusRequest.getId(), BookingStatusEnum.REQUESTED).orElseThrow(() -> new NotFoundException("Booking này không tồn tại"));
 
-        if(statusRequest.getStatus().equals(BookingStatusEnum.ACCEPTED) || statusRequest.getStatus().equals(BookingStatusEnum.REJECTED)){
-            if(booking.getMentor().getId().equals(user.getId())){
+        if (statusRequest.getStatus().equals(BookingStatusEnum.ACCEPTED) || statusRequest.getStatus().equals(BookingStatusEnum.REJECTED)) {
+            if (booking.getMentor().getId().equals(user.getId())) {
                 booking.setStatus(statusRequest.getStatus());
-            }else{
+                //send notification
+                String message = "Mentor đã chấp nhận booking của bạn";
+                String title = "Phản hồi của Mentor";
+                if (statusRequest.getStatus().equals(BookingStatusEnum.REJECTED)) {
+                    message = "Mentor đã từ chối booking của bạn";
+                }
+                sendNotificationForTeam(booking, message,title);
+            } else {
                 throw new BadRequestException("Booking này không phải của bạn");
             }
-        }else if(statusRequest.getStatus().equals(BookingStatusEnum.CANCELLED)){
+        } else if (statusRequest.getStatus().equals(BookingStatusEnum.CANCELLED)) {
 
-            if(booking.getType().equals(BookingTypeEnum.INDIVIDUAL)) {
-                if(booking.getStudent().getId().equals(user.getId())){
-                booking.setStatus(statusRequest.getStatus());
-                }else{
+            if (booking.getType().equals(BookingTypeEnum.INDIVIDUAL)) {
+                if (booking.getStudent().getId().equals(user.getId())) {
+                    booking.setStatus(statusRequest.getStatus());
+                    //send notification
+                    String title = "Hủy Booking ";
+                    String message = "Đã Hủy Booking của " + booking.getStudent().getFullName();
+                    notificationService.createNotification(title, message, booking.getMentor(),true);
+                } else {
                     throw new BadRequestException("Booking này không phải của bạn");
                 }
-            }else {
+            } else {
                 boolean isLeader = booking.getTeam().getUserTeams().stream()
                         .anyMatch(userTeam -> userTeam.getUser().getId().equals(user.getId()) && userTeam.getRole().equals(TeamRoleEnum.LEADER));
 
                 if (isLeader) {
                     booking.setStatus(statusRequest.getStatus());
+                    //
+                    String title = "Hủy Booking";
+                    String message = "Đã hủy Booking của nhóm " + booking.getTeam().getCode();
+                    notificationService.createNotification(title, message, booking.getMentor(),true);
                 } else {
                     throw new BadRequestException("Chỉ leader mới có thể huỷ booking này.");
                 }
             }
-        }else {
+        } else {
             throw new BadRequestException("Không thể chuyển qua status REQUESTED");
         }
 
         return bookingMapper.toBookingResponse(bookingRepository.save(booking));
+    }
+
+    private void sendNotificationForTeam(Booking booking, String message, String title) {
+        if (booking.getTeam() != null) {
+            Set<UserTeam> userTeams = booking.getTeam().getUserTeams();
+            for (UserTeam userTeam : userTeams) {
+                notificationService.createNotification(title, message , userTeam.getUser(),true);
+            }
+        } else {
+            notificationService.createNotification(title, message, booking.getStudent(),true);
+        }
     }
 
 
@@ -260,10 +285,10 @@ public class BookingServiceImpl implements IBookingService {
         if (!timeFrame.getSemester().getStatus().equals(SemesterEnum.ACTIVE)) {
             throw new IllegalArgumentException("The time frame is not active.");
         }
-        if(timeFrame.getTimeFrameStatus().equals(TimeFrameStatus.BOOKED)){
+        if (timeFrame.getTimeFrameStatus().equals(TimeFrameStatus.BOOKED)) {
             throw new IllegalArgumentException("SLot này đã được booking");
         }
-        if(timeFrame.getTimeFrameStatus().equals(TimeFrameStatus.EXPIRED)){
+        if (timeFrame.getTimeFrameStatus().equals(TimeFrameStatus.EXPIRED)) {
             throw new IllegalArgumentException("SLot này đã qua thời gian hiện tại");
         }
         if (bookingRepository.existsByTimeFrameIdAndStatus(timeFrame.getId(), BookingStatusEnum.ACCEPTED)) {
@@ -290,10 +315,10 @@ public class BookingServiceImpl implements IBookingService {
         booking.setSemester(timeFrame.getSemester());
         booking.setStatus(BookingStatusEnum.REQUESTED);
         booking.setType(type);
-        try{
+        try {
             String meetLink = googleMeetService.createGoogleMeetLink(booking);
             booking.setMeetLink(meetLink);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new BadRequestException("Cannot create meet link");
         }
         if (type.equals(BookingTypeEnum.TEAM)) {
@@ -301,7 +326,7 @@ public class BookingServiceImpl implements IBookingService {
         } else {
             booking.setStudent(currentUser);
         }
-        BookingHistory bookingHistory =  logBookingHistory(booking, BookingStatusEnum.REQUESTED);
+        BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.REQUESTED);
         booking.getBookingHistories().add(bookingHistory);
         booking = bookingRepository.save(booking);
         bookingHistoryRepository.save(bookingHistory);
@@ -323,8 +348,9 @@ public class BookingServiceImpl implements IBookingService {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking Not Found"));
     }
+
     @Override
-    public Booking saveBooking(Booking booking){
+    public Booking saveBooking(Booking booking) {
         return bookingRepository.save(booking);
     }
 }

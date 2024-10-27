@@ -6,6 +6,6 @@ import com.BE.model.entity.User;
 import java.util.List;
 
 public interface INotificationService {
-    void createNotification(String title, String message, User user);
+    void createNotification(String title, String message, User user, boolean sendMailStatus);
     List<Notification> getNotifications();
 }

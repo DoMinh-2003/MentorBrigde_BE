@@ -98,7 +98,7 @@ public class TeamServiceImpl implements ITeamService {
         //
         notificationService.createNotification("Lời mời gia nhập nhóm",
                 currentUser.getFullName() + " đã mời bạn vào nhóm " + teamCode,
-                user);
+                user,false);
         Runnable r = () -> emailService.sendMailTemplate(emailDetail);
         new Thread(r).start();
     }
@@ -113,7 +113,7 @@ public class TeamServiceImpl implements ITeamService {
             for (UserTeam userTeam : users) {
                 notificationService.createNotification("Chấp nhận vào nhóm",
                         user.getFullName() + " đã vào nhóm " + teamCode,
-                        userTeam.getUser());
+                        userTeam.getUser(),true);
             }
         } else {
             throw new IllegalArgumentException("The Invitation is not valid or expired!");
@@ -143,7 +143,7 @@ public class TeamServiceImpl implements ITeamService {
         for (UserTeam userTeam : users) {
             notificationService.createNotification("Thay đổi nhóm trưởng",
                     user.getFullName() + " Là nhóm trưởng mới của team  " + teamCode,
-                    userTeam.getUser());
+                    userTeam.getUser(),true);
         }
         // Save changes
         userTeamRepository.save(currentUserTeam);
