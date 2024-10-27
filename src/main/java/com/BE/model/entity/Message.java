@@ -1,21 +1,36 @@
 package com.BE.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.AccessLevel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.UuidGenerator;
 
-import java.util.UUID;
 
+import java.util.Date;
+
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@Entity
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Message {
     @Id
-    @UuidGenerator
-    UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int messageID;
+
+    String message;
+
+    Date createAt = new Date();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    User user;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    Room room;
 }
+

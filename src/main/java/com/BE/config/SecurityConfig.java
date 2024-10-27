@@ -52,6 +52,8 @@ public class SecurityConfig  {
             "/api/admin/upload-csv",
             "/authorize",
             "/oauth2callback"
+            "/websocket"
+
 
     };
 

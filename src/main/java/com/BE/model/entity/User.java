@@ -90,9 +90,24 @@
         @JsonIgnore
         Set<Booking> bookingsMentor = new HashSet<>();
 
+
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
         @JsonIgnore
         Set<Notification> notifications = new HashSet<>();
+
+        @ManyToMany
+//    @JsonBackReference
+        @JsonIgnore
+        @JoinTable(
+                name = "room_user",
+                joinColumns = @JoinColumn(name = "user_id"),
+                inverseJoinColumns = @JoinColumn(name = "room_id"))
+        Set<Room> rooms;
+
+        @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+        @JsonIgnore
+        Set<Message> messages = new HashSet<>();
+
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
