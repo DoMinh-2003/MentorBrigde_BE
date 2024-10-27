@@ -90,6 +90,10 @@
         @JsonIgnore
         Set<Booking> bookingsMentor = new HashSet<>();
 
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+        @JsonIgnore
+        Set<Notification> notifications = new HashSet<>();
+
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();

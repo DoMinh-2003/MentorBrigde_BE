@@ -11,6 +11,7 @@ import com.BE.repository.TeamRepository;
 import com.BE.repository.UserTeamRepository;
 import com.BE.service.EmailService;
 import com.BE.service.JWTService;
+import com.BE.service.interfaceServices.INotificationService;
 import com.BE.service.interfaceServices.ISemesterService;
 
 import com.BE.service.interfaceServices.IStudentService;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -33,6 +35,7 @@ public class TeamServiceImpl implements ITeamService {
     private final EmailService emailService;
     private final JWTService jwtService;
     private final IStudentService studentService;
+    private final INotificationService notificationService;
 
     public TeamServiceImpl(TeamRepository teamRepository,
                            UserTeamRepository userTeamRepository,
@@ -40,7 +43,8 @@ public class TeamServiceImpl implements ITeamService {
                            ISemesterService semesterService,
                            EmailService emailService,
                            JWTService jwtService,
-                           IStudentService studentService) {
+                           IStudentService studentService,
+                           INotificationService notificationService) {
         this.teamRepository = teamRepository;
         this.userTeamRepository = userTeamRepository;
         this.accountUtils = accountUtils;
@@ -48,6 +52,7 @@ public class TeamServiceImpl implements ITeamService {
         this.emailService = emailService;
         this.jwtService = jwtService;
         this.studentService = studentService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -81,6 +86,7 @@ public class TeamServiceImpl implements ITeamService {
 
     @Override
     public void inviteMember(String email, String teamCode) {
+        User currentUser = accountUtils.getCurrentUser();
         User user = studentService.getStudentByEmail(email);
         EmailDetail emailDetail = new EmailDetail();
         emailDetail.setRecipient(user.getEmail());
@@ -88,6 +94,10 @@ public class TeamServiceImpl implements ITeamService {
         emailDetail.setButtonValue("Accept Invitation");
         emailDetail.setFullName(user.getFullName());
         emailDetail.setLink("http://localhost:5173/team-invite?token=" + jwtService.generateToken(user) + "&teamCode=" + teamCode);
+        //
+        notificationService.createNotification("Lời mời gia nhập nhóm",
+                currentUser.getFullName() + " đã mời bạn vào nhóm " + teamCode,
+                user);
         Runnable r = () -> emailService.sendMailTemplate(emailDetail);
         new Thread(r).start();
     }
@@ -96,6 +106,13 @@ public class TeamServiceImpl implements ITeamService {
         User user = jwtService.getUserByToken(token);
         if (user != null && !userTeamRepository.existsByUserId(user.getId())) {
             addMemberToTeam(user, teamCode);
+            Team team = getTeamByCode(teamCode);
+            Set<UserTeam> users =  team.getUserTeams();
+            for (UserTeam userTeam : users) {
+                notificationService.createNotification("Chấp nhận vào nhóm",
+                        user.getFullName() + " đã vào nhóm " + teamCode,
+                        userTeam.getUser());
+            }
         }else {
             throw new IllegalArgumentException("The Invitation is not valid or expired!");
         }
@@ -119,7 +136,13 @@ public class TeamServiceImpl implements ITeamService {
         // Swap roles
         newLeaderUserTeam.setRole(TeamRoleEnum.LEADER);
         currentUserTeam.setRole(TeamRoleEnum.MEMBER);
-
+        // notification
+        Set<UserTeam> users =  newLeaderUserTeam.getTeam().getUserTeams();
+        for (UserTeam userTeam : users) {
+            notificationService.createNotification("Thay đổi nhóm trưởng",
+                    user.getFullName() + " Là nhóm trưởng mới của team  " + teamCode,
+                    userTeam.getUser());
+        }
         // Save changes
         userTeamRepository.save(currentUserTeam);
         userTeamRepository.save(newLeaderUserTeam);
