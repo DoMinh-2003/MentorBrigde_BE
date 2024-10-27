@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,7 +61,7 @@ public class TeamServiceImpl implements ITeamService {
     public Team createTeam() {
         User user = accountUtils.getCurrentUser();
         // Check if user already has a team
-        if( userTeamRepository.existsByUserId(user.getId())){
+        if (userTeamRepository.existsByUserId(user.getId())) {
             throw new IllegalArgumentException("You already have a team. Please out of it before creating a new one.");
         }
         // Create a new team
@@ -101,19 +102,20 @@ public class TeamServiceImpl implements ITeamService {
         Runnable r = () -> emailService.sendMailTemplate(emailDetail);
         new Thread(r).start();
     }
+
     @Override
-    public void acceptInvitation(String token,String teamCode) {
+    public void acceptInvitation(String token, String teamCode) {
         User user = jwtService.getUserByToken(token);
         if (user != null && !userTeamRepository.existsByUserId(user.getId())) {
             addMemberToTeam(user, teamCode);
             Team team = getTeamByCode(teamCode);
-            Set<UserTeam> users =  team.getUserTeams();
+            Set<UserTeam> users = team.getUserTeams();
             for (UserTeam userTeam : users) {
                 notificationService.createNotification("Chấp nhận vào nhóm",
                         user.getFullName() + " đã vào nhóm " + teamCode,
                         userTeam.getUser());
             }
-        }else {
+        } else {
             throw new IllegalArgumentException("The Invitation is not valid or expired!");
         }
     }
@@ -137,7 +139,7 @@ public class TeamServiceImpl implements ITeamService {
         newLeaderUserTeam.setRole(TeamRoleEnum.LEADER);
         currentUserTeam.setRole(TeamRoleEnum.MEMBER);
         // notification
-        Set<UserTeam> users =  newLeaderUserTeam.getTeam().getUserTeams();
+        Set<UserTeam> users = newLeaderUserTeam.getTeam().getUserTeams();
         for (UserTeam userTeam : users) {
             notificationService.createNotification("Thay đổi nhóm trưởng",
                     user.getFullName() + " Là nhóm trưởng mới của team  " + teamCode,
@@ -166,10 +168,23 @@ public class TeamServiceImpl implements ITeamService {
         userTeam.setRole(TeamRoleEnum.MEMBER);
         userTeamRepository.save(userTeam);
     }
+
     @Override
     public Team getTeamByCode(String teamCode) {
-        return teamRepository.findByCode(teamCode).orElseThrow(() -> new NotFoundException("Team not found"));
+        if (teamCode != null) {
+            return teamRepository.findByCode(teamCode).orElseThrow(() -> new NotFoundException("Team not found"));
+        }
+        User user = accountUtils.getCurrentUser();
+        Optional<UserTeam> userTeamOpt = user.getUserTeams().stream().findFirst();
+        if (userTeamOpt.isPresent()) {
+            Team team = userTeamOpt.get().getTeam();
+            if (team != null) {
+                return teamRepository.findByCode(team.getCode()).orElseThrow(() -> new NotFoundException("Team not found"));
+            }
+        }
+        throw new NotFoundException("No team found for the current user");
     }
+
     private String generateGroupCode(Semester semester) {
         // Count the number of teams in the current semester
         int teamCount = teamRepository.countBySemester(semester);
@@ -188,16 +203,18 @@ public class TeamServiceImpl implements ITeamService {
 
         return "G" + symbol + year + formattedCounter;
     }
+
     @Override
     public UserTeam getCurrentUserTeam() {
         User user = accountUtils.getCurrentUser();
         return userTeamRepository.findByUserId(user.getId()).orElseThrow(() -> new NotFoundException("User team relationship not found"));
 
     }
+
     @Override
-    public List<Team> getTeamsByUserIdAndRole(TeamRoleEnum role){
+    public List<Team> getTeamsByUserIdAndRole(TeamRoleEnum role) {
         User user = accountUtils.getCurrentUser();
-        List<UserTeam>  userTeams = userTeamRepository.findByUserIdAndRole(user.getId(),role);
+        List<UserTeam> userTeams = userTeamRepository.findByUserIdAndRole(user.getId(), role);
         return userTeams.stream().map(UserTeam::getTeam).toList();
     }
 }

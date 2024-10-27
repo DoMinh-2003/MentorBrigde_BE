@@ -24,6 +24,6 @@ public class TeamController {
     public ResponseEntity<DataResponseDTO<Object>> getTeamByMentorId() {
         return responseHandler.response(200,"Create New Schedule Successfully",
                 teamService.getTeamsByUserIdAndRole(TeamRoleEnum.MENTOR));
-
     }
+
 }

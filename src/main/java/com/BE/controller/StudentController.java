@@ -1,6 +1,7 @@
 package com.BE.controller;
 
 import com.BE.enums.BookingTypeEnum;
+import com.BE.model.entity.Team;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.UserResponse;
 import com.BE.service.GoogleMeetService;
@@ -97,8 +98,9 @@ public class StudentController {
                 bookingService.createBooking(timeFrameId, type));
     }
     @GetMapping("/team")
-    public ResponseEntity<DataResponseDTO<Object>> getTeam(@RequestParam String teamCode) {
-        return responseHandler.response(200, "Get team success!", teamService.getTeamByCode(teamCode));
+    public ResponseEntity<DataResponseDTO<Object>> getTeam(@RequestParam(required = false) String teamCode) {
+        Team team = teamService.getTeamByCode(teamCode);
+        return responseHandler.response(200, "Get team success!", team);
     }
 //    @PostMapping("/meet")
 //    public ResponseEntity<DataResponseDTO<Object>> getMeet() {
