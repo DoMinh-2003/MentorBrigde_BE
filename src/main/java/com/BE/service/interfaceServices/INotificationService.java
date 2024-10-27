@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface INotificationService {
     void createNotification(String title, String message, User user);
-    List<Notification> getNotificationsByUserId();
+    List<Notification> getNotifications();
 }
