@@ -58,7 +58,7 @@ public class EmailService {
 
             // Setting up necessary details
             mimeMessageHelper.setFrom("admin@gmail.com");
-            mimeMessageHelper.setTo("tramctnse171174@fpt.edu.vn");
+            mimeMessageHelper.setTo(user.getEmail());
             mimeMessageHelper.setText(description);
             mimeMessageHelper.setSubject(subject);
             javaMailSender.send(mimeMessage);
