@@ -3,6 +3,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.RoleEnum;
 import com.BE.enums.SemesterEnum;
+import com.BE.enums.TeamRoleEnum;
 import com.BE.enums.TopicEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
@@ -12,10 +13,8 @@ import com.BE.model.entity.*;
 import com.BE.model.request.TopicRequest;
 import com.BE.model.response.FileResponse;
 import com.BE.model.response.TopicResponse;
-import com.BE.repository.FileRepository;
-import com.BE.repository.SemesterRepository;
-import com.BE.repository.TeamRepository;
-import com.BE.repository.TopicRepository;
+import com.BE.repository.*;
+import com.BE.service.interfaceServices.INotificationService;
 import com.BE.service.interfaceServices.ITopicService;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.DateNowUtils;
@@ -43,6 +42,12 @@ public class TopicImpl implements ITopicService {
 
     @Autowired
     SemesterRepository semesterRepository;
+
+    @Autowired
+    UserTeamRepository userTeamRepository;
+
+    @Autowired
+    INotificationService notificationService;
 
     @Autowired
     FileRepository fileRepository;
@@ -207,8 +212,21 @@ public class TopicImpl implements ITopicService {
         if(topicEnum.equals(TopicEnum.ACCEPTED)){
             if(topic.getTeam() != null) {
                 topic.setStatus(TopicEnum.ACTIVE);
+                Team team = topic.getTeam();
+                UserTeam userTeam = new UserTeam();
+                userTeam.setRole(TeamRoleEnum.MENTOR);
+                userTeam.setTeam(team);
+                userTeam.setUser(topic.getCreator());
+                userTeamRepository.save(userTeam);
+                team.getUserTeams().add(userTeam);
+                teamRepository.save(team);
+                //notify
+                notificationService.createNotification("Phê duyệt topic", "topic của bạn đã được chấp nhận ",
+                        topic.getCreator(),true);
             }else{
                 topic.setStatus(TopicEnum.APPROVED);
+                notificationService.createNotification("Phê duyệt topic", "topic của bạn đã bị từ chối ",
+                        topic.getCreator(),true);
             }
         }
         return topicMapper.toTopicResponse(topicRepository.save(topic));

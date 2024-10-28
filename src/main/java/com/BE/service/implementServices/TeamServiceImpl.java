@@ -230,6 +230,7 @@ public class TeamServiceImpl implements ITeamService {
             userTeamRepository.save(userTeam);
             topic.setTeam(team);
             topicService.saveTopic(topic);
+            team.getUserTeams().add(userTeam);
         } else {
             throw new BadRequestException("Cannot add topic because an ACTIVE or PENDING topic already exists in the team.");
         }
