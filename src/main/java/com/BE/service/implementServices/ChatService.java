@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 
+import com.BE.mapper.RoomMapper;
 import com.BE.model.entity.Message;
 import com.BE.model.entity.Room;
 import com.BE.model.entity.User;
@@ -41,17 +42,22 @@ public class ChatService implements IChatService {
     @Autowired
     FcmService fcmService;
 
+    @Autowired
+    RoomMapper roomMapper;
+
 
     @Override
     public Room createNewRoom(RoomRequest roomRequest) {
         Set<User> users = new HashSet<>();
-        User user1 = userRepository.findById(roomRequest.getMembers().get(0)).orElseThrow();
-        User user2 = userRepository.findById(roomRequest.getMembers().get(1)).orElseThrow();
-        Room roomCheck = roomRepository.findRoomByUsersIsContainingAndUsersIsContaining(user1,user2);
-        if(roomCheck!=null) return roomCheck;
+        List<UUID> memberIds = roomRequest.getMembers();
+        List<User> existUser = userRepository.findAllById(memberIds);
+        Room existingRoom = roomRepository.findRoomByUsers(existUser, users.size());
+        if(existingRoom != null) return existingRoom;
 
         Room room = new Room();
-        room.setUsers(users);
+        if(roomRequest.getLeaderId() != null) room.setLeaderId(roomRequest.getLeaderId());
+        if(roomRequest.getName() != null) room.setName(roomRequest.getName());
+
         for (UUID accountId : roomRequest.getMembers()) {
             try {
                 User user = userRepository.findById(accountId).orElseThrow();
@@ -61,6 +67,7 @@ public class ChatService implements IChatService {
                 e.printStackTrace();
             }
         }
+        room.setUsers(users);
         return roomRepository.save(room);
     }
     @Override

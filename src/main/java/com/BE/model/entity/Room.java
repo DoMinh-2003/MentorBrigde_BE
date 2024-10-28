@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
@@ -20,6 +21,7 @@ import java.util.Set;
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "room_id")
     private int roomID;
 
     private String name;
@@ -27,8 +29,11 @@ public class Room {
     Date lastUpdated = new Date();
 
     String lastMessage;
-    @JsonManagedReference
 
+    UUID leaderId;
+
+
+    @JsonManagedReference
     @ManyToMany(mappedBy = "rooms",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<User> users;
 

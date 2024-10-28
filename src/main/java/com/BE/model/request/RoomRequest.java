@@ -7,6 +7,7 @@ import java.util.UUID;
 
 @Data
 public class RoomRequest {
+    UUID leaderId;
     String name;
     List<UUID> members;
 }

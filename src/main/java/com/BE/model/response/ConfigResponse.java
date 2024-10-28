@@ -21,4 +21,8 @@ public class ConfigResponse {
     int minimumHours;
 
     String minTimeSlotDuration;
+
+    int totalPoints;
+
+    int pointsDeducted;
 }
