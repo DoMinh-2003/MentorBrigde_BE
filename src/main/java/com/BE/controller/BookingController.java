@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/booking")
@@ -52,6 +53,25 @@ public class BookingController {
     @GetMapping("/nearest")
     public ResponseEntity getBookingsNearestToNow(){
         return  responseHandler.response(200,"Get Booking Successfully", iBookingService.getBookingsClosestToNowByUser());
+    }
+
+    @PutMapping("/{bookingId}/reschedule")
+    public ResponseEntity<Booking> requestRescheduleBooking(
+            @PathVariable UUID bookingId,
+            @RequestParam UUID newTimeFrameId) {
+
+        Booking rescheduledBooking = iBookingService.requestRescheduleBooking(bookingId, newTimeFrameId);
+        return ResponseEntity.ok(rescheduledBooking);
+    }
+
+    @PutMapping("/{bookingId}/confirm-reschedule")
+    public ResponseEntity<Booking> confirmRescheduleBooking(
+            @PathVariable UUID bookingId,
+            @RequestParam UUID newTimeFrameId,
+            @RequestParam boolean isConfirmed) {
+
+        Booking updatedBooking = iBookingService.confirmRescheduleBooking(bookingId, newTimeFrameId, isConfirmed);
+        return ResponseEntity.ok(updatedBooking);
     }
 
 

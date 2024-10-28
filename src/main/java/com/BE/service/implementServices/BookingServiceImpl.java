@@ -5,6 +5,7 @@ import com.BE.enums.*;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.BookingMapper;
 import com.BE.mapper.UserMapper;
+import com.BE.model.EmailDetail;
 import com.BE.model.entity.*;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.request.BookingRequestFilter;
@@ -16,10 +17,12 @@ import com.BE.repository.BookingRepository;
 import com.BE.repository.SemesterRepository;
 import com.BE.repository.TimeFrameRepository;
 import com.BE.service.GoogleMeetService;
+import com.BE.service.JWTService;
 import com.BE.service.interfaceServices.*;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 
+import com.BE.utils.SendMailUtils;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -53,6 +56,12 @@ public class BookingServiceImpl implements IBookingService {
 
     @Autowired
     BookingMapper bookingMapper;
+
+    @Autowired
+    SendMailUtils sendMailUtils;
+
+    @Autowired
+    JWTService jwtService;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               ITimeFrameService timeFrameService,
@@ -387,4 +396,60 @@ public class BookingServiceImpl implements IBookingService {
         LocalDateTime nowInHoChiMinh = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         return bookingRepository.findBookingsClosestToDateByUser(nowInHoChiMinh, user).stream().map(bookingMapper::toBookingResponse).collect(Collectors.toList());
     }
+
+    @Override
+    public Booking requestRescheduleBooking(UUID bookingId, UUID newTimeFrameId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BadRequestException("Booking không tồn tại."));
+
+        TimeFrame newTimeFrame = timeFrameRepository.findById(newTimeFrameId)
+                .orElseThrow(() -> new BadRequestException("TimeFrame mới không tồn tại."));
+
+        if (newTimeFrame.getTimeFrameStatus() != TimeFrameStatus.AVAILABLE) {
+            throw new BadRequestException("TimeFrame mới không khả dụng.");
+        }
+
+        // Đặt trạng thái của booking thành PENDING_RESCHEDULE để chờ xác nhận
+        booking.setStatus(BookingStatusEnum.PENDING_RESCHEDULE);
+        bookingRepository.save(booking);
+
+        // Gửi thông báo cho team hoặc student để xác nhận
+        sendRescheduleNotification(booking, newTimeFrame);
+
+        return booking;
+    }
+
+    @Override
+    public Booking confirmRescheduleBooking(UUID bookingId, UUID newTimeFrameId, boolean isConfirmed) {
+        return null;
+    }
+
+    private void sendRescheduleNotification(Booking booking, TimeFrame newTimeFrame) {
+        List<User> recipients = new ArrayList<>();
+
+        if (booking.getType() == BookingTypeEnum.TEAM && booking.getTeam() != null) {
+            recipients.addAll(booking.getTeam().getUserTeams().stream()
+                    .map(UserTeam::getUser)
+                    .collect(Collectors.toList()));
+        } else if (booking.getStudent() != null) {
+            recipients.add(booking.getStudent());
+        }
+
+        for (User recipient : recipients) {
+            EmailDetail emailDetail = new EmailDetail();
+            emailDetail.setSubject("Yêu cầu dời lịch");
+            emailDetail.setFullName(recipient.getFullName());
+            emailDetail.setRecipient(recipient.getEmail());
+            emailDetail.setButtonValue("Xem lịch booking mới");
+            emailDetail.setLink("http://localhost5173/booking/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
+            sendMailUtils.threadSendMailTemplate(emailDetail);
+            String title = "Dời lịch Booking";
+            String message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
+            notificationService.createNotification(title, message, recipient,false);
+        }
+    }
+
+
+
+
 }

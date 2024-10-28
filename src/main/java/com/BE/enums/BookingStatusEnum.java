@@ -4,5 +4,11 @@ public enum BookingStatusEnum {
     REQUESTED,
     ACCEPTED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+
+    RESCHEDULED,
+
+    PENDING_RESCHEDULE,
+
+    RESCHEDULE_REJECTED
 }
