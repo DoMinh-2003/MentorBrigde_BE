@@ -22,8 +22,13 @@ public class TeamController {
     private ITeamService teamService;
     @GetMapping("/team/mentorId")
     public ResponseEntity<DataResponseDTO<Object>> getTeamByMentorId() {
-        return responseHandler.response(200,"Create New Schedule Successfully",
+        return responseHandler.response(200,"Get Team Successfully",
                 teamService.getTeamsByUserIdAndRole(TeamRoleEnum.MENTOR));
+    }
+    @PutMapping("/team/topic")
+    public ResponseEntity<DataResponseDTO<Object>> addTopicToTeam(@RequestParam UUID topicId) {
+        return responseHandler.response(200,"Add Topic Successfully",
+                teamService.addTopicToTeam(topicId));
     }
 
 }

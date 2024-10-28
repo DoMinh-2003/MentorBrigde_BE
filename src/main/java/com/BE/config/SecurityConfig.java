@@ -51,7 +51,7 @@ public class SecurityConfig  {
             "/api/accept-invitation",
             "/api/admin/upload-csv",
             "/authorize",
-            "/oauth2callback"
+            "/oauth2callback",
             "/websocket"
 
 

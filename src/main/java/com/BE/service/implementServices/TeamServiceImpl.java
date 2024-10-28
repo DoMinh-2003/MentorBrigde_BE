@@ -1,21 +1,17 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.TeamRoleEnum;
+import com.BE.enums.TopicEnum;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.EmailDetail;
-import com.BE.model.entity.Semester;
-import com.BE.model.entity.Team;
-import com.BE.model.entity.User;
-import com.BE.model.entity.UserTeam;
+import com.BE.model.entity.*;
 import com.BE.repository.TeamRepository;
 import com.BE.repository.UserTeamRepository;
 import com.BE.service.EmailService;
 import com.BE.service.JWTService;
-import com.BE.service.interfaceServices.INotificationService;
-import com.BE.service.interfaceServices.ISemesterService;
+import com.BE.service.interfaceServices.*;
 
-import com.BE.service.interfaceServices.IStudentService;
-import com.BE.service.interfaceServices.ITeamService;
 import com.BE.utils.AccountUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +33,7 @@ public class TeamServiceImpl implements ITeamService {
     private final JWTService jwtService;
     private final IStudentService studentService;
     private final INotificationService notificationService;
+    private final ITopicService topicService;
 
     public TeamServiceImpl(TeamRepository teamRepository,
                            UserTeamRepository userTeamRepository,
@@ -45,7 +42,8 @@ public class TeamServiceImpl implements ITeamService {
                            EmailService emailService,
                            JWTService jwtService,
                            IStudentService studentService,
-                           INotificationService notificationService) {
+                           INotificationService notificationService,
+                           ITopicService topicService) {
         this.teamRepository = teamRepository;
         this.userTeamRepository = userTeamRepository;
         this.accountUtils = accountUtils;
@@ -54,6 +52,7 @@ public class TeamServiceImpl implements ITeamService {
         this.jwtService = jwtService;
         this.studentService = studentService;
         this.notificationService = notificationService;
+        this.topicService = topicService;
     }
 
     @Override
@@ -98,7 +97,7 @@ public class TeamServiceImpl implements ITeamService {
         //
         notificationService.createNotification("Lời mời gia nhập nhóm",
                 currentUser.getFullName() + " đã mời bạn vào nhóm " + teamCode,
-                user);
+                user,false);
         Runnable r = () -> emailService.sendMailTemplate(emailDetail);
         new Thread(r).start();
     }
@@ -113,7 +112,7 @@ public class TeamServiceImpl implements ITeamService {
             for (UserTeam userTeam : users) {
                 notificationService.createNotification("Chấp nhận vào nhóm",
                         user.getFullName() + " đã vào nhóm " + teamCode,
-                        userTeam.getUser());
+                        userTeam.getUser(),true);
             }
         } else {
             throw new IllegalArgumentException("The Invitation is not valid or expired!");
@@ -143,7 +142,7 @@ public class TeamServiceImpl implements ITeamService {
         for (UserTeam userTeam : users) {
             notificationService.createNotification("Thay đổi nhóm trưởng",
                     user.getFullName() + " Là nhóm trưởng mới của team  " + teamCode,
-                    userTeam.getUser());
+                    userTeam.getUser(),true);
         }
         // Save changes
         userTeamRepository.save(currentUserTeam);
@@ -216,5 +215,24 @@ public class TeamServiceImpl implements ITeamService {
         User user = accountUtils.getCurrentUser();
         List<UserTeam> userTeams = userTeamRepository.findByUserIdAndRole(user.getId(), role);
         return userTeams.stream().map(UserTeam::getTeam).toList();
+    }
+    @Override
+    public Team addTopicToTeam(UUID topicId){
+        Team team = getCurrentUserTeam().getTeam();
+        Topic topic = topicService.getTopicById(topicId);
+        if (team.getTopics().stream().noneMatch(existingTopic ->
+                TopicEnum.ACTIVE.equals(existingTopic.getStatus()) || TopicEnum.PENDING.equals(existingTopic.getStatus()))) {
+            team.getTopics().add(topic);
+            UserTeam userTeam = new UserTeam();
+            userTeam.setRole(TeamRoleEnum.MENTOR);
+            userTeam.setTeam(team);
+            userTeam.setUser(topic.getCreator());
+            userTeamRepository.save(userTeam);
+            topic.setTeam(team);
+            topicService.saveTopic(topic);
+        } else {
+            throw new BadRequestException("Cannot add topic because an ACTIVE or PENDING topic already exists in the team.");
+        }
+        return teamRepository.save(team);
     }
 }
