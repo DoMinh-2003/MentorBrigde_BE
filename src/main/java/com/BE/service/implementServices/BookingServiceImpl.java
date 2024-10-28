@@ -421,7 +421,60 @@ public class BookingServiceImpl implements IBookingService {
 
     @Override
     public Booking confirmRescheduleBooking(UUID bookingId, UUID newTimeFrameId, boolean isConfirmed) {
-        return null;
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BadRequestException("Booking không tồn tại."));
+
+        if (booking.getStatus() != BookingStatusEnum.PENDING_RESCHEDULE) {
+            throw new BadRequestException("Booking không ở trạng thái chờ xác nhận dời lịch.");
+        }
+
+        if (!isConfirmed) {
+            // Nếu từ chối, đưa booking về trạng thái ban đầu và không dời lịch
+            BookingHistory bookingHistory = new BookingHistory();
+            bookingHistory.setBooking(booking);
+            bookingHistory.setType(BookingStatusEnum.RESCHEDULE_REJECTED);
+            bookingHistory.setCreatedAt(LocalDateTime.now());
+            bookingHistoryRepository.save(bookingHistory);
+
+            String title = "Dời lịch Booking ";
+            String message =  "Nhóm " + booking.getTeam().getCode() + " đã từ chối dời lịch Booking";
+            notificationService.createNotification(title, message, booking.getMentor(),true);
+
+            return booking;
+        }
+
+//        // Nếu đồng ý, tiến hành dời lịch
+//        TimeFrame currentTimeFrame = booking.getTimeFrame();
+        TimeFrame newTimeFrame = timeFrameRepository.findById(newTimeFrameId)
+                .orElseThrow(() -> new BadRequestException("TimeFrame mới không tồn tại."));
+
+        if (newTimeFrame.getTimeFrameStatus() != TimeFrameStatus.AVAILABLE) {
+            throw new BadRequestException("TimeFrame mới không khả dụng.");
+        }
+
+//        currentTimeFrame.setTimeFrameStatus(TimeFrameStatus.AVAILABLE);
+//        timeFrameRepository.save(currentTimeFrame);
+
+        booking.setTimeFrame(newTimeFrame);
+        booking.setStatus(BookingStatusEnum.RESCHEDULED);
+        bookingRepository.save(booking);
+
+        newTimeFrame.setTimeFrameStatus(TimeFrameStatus.BOOKED);
+        timeFrameRepository.save(newTimeFrame);
+
+        // Ghi lịch sử dời lịch
+
+        BookingHistory bookingHistory = new BookingHistory();
+        bookingHistory.setBooking(booking);
+        bookingHistory.setType(BookingStatusEnum.RESCHEDULED);
+        bookingHistory.setCreatedAt(LocalDateTime.now());
+        bookingHistoryRepository.save(bookingHistory);
+
+        String title = "Dời lịch Booking ";
+        String message =  "Nhóm " + booking.getTeam().getCode() + " đã đồng ý dời lịch Booking ";
+        notificationService.createNotification(title, message, booking.getMentor(),true);
+
+        return booking;
     }
 
     private void sendRescheduleNotification(Booking booking, TimeFrame newTimeFrame) {
