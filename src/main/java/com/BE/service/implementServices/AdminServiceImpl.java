@@ -50,7 +50,7 @@ public class AdminServiceImpl implements IAdminService {
 
     @Override
     public void importCSV(MultipartFile file) {
-       Config config =  configRepository.findFirstBy();
+       Config config = configRepository.findFirstBy();
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
             String[] values;
             List<User> users = new ArrayList<>();
@@ -88,7 +88,7 @@ public class AdminServiceImpl implements IAdminService {
                         System.out.println("User already exists, skipping: " + user.getEmail());
                         continue;
                     }
-                    user.setPoints(config.getPointsDeducted());
+                    user.setPoints(config.getTotalPoints());
                     users.add(user);
                 } catch (Exception e) {
                     System.out.println("Error processing user: " + Arrays.toString(values));
