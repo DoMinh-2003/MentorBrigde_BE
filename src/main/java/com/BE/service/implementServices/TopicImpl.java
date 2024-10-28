@@ -214,5 +214,15 @@ public class TopicImpl implements ITopicService {
         return topicMapper.toTopicResponse(topicRepository.save(topic));
     }
 
+    @Override
+    public Topic getTopicById(UUID id){
+        return topicRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Topic not found"));
+    }
+
+    @Override
+    public void saveTopic(Topic topic) {
+        topicRepository.save(topic);
+    }
 
 }

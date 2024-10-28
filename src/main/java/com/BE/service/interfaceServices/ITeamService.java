@@ -18,4 +18,5 @@ public interface ITeamService {
     UserTeam getUserTeamByUserIdAndValidate(UUID userId, String teamCode, String errorMessage);
     UserTeam getCurrentUserTeam();
     List<Team> getTeamsByUserIdAndRole(TeamRoleEnum role);
+    Team addTopicToTeam(UUID topicId);
 }

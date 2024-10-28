@@ -1,6 +1,7 @@
 package com.BE.service.interfaceServices;
 
 import com.BE.enums.TopicEnum;
+import com.BE.model.entity.Topic;
 import com.BE.model.request.TopicRequest;
 import com.BE.model.response.FileResponse;
 import com.BE.model.response.TopicResponse;
@@ -23,8 +24,10 @@ public interface ITopicService {
 
    List<TopicResponse> getTopics(String name, TopicEnum status, int page, int size, String sortBy, String sortDirection, String semesterCode);
 
-
    TopicResponse changeStatus(UUID id,TopicEnum topicEnum);
 
+   Topic getTopicById(UUID id);
+
+   void saveTopic(Topic topic);
 
 }
