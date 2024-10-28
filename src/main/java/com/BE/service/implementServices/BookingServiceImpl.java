@@ -248,6 +248,15 @@ public class BookingServiceImpl implements IBookingService {
             } else {
                 throw new BadRequestException("Booking này không phải của bạn");
             }
+
+
+            if (statusRequest.getStatus().equals(BookingStatusEnum.REJECTED)){
+                BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.REJECTED);
+                bookingHistoryRepository.save(bookingHistory);
+            }else if(statusRequest.getStatus().equals(BookingStatusEnum.ACCEPTED)){
+                BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.ACCEPTED);
+                bookingHistoryRepository.save(bookingHistory);
+            }
         } else if (statusRequest.getStatus().equals(BookingStatusEnum.CANCELLED)) {
 
             if (booking.getType().equals(BookingTypeEnum.INDIVIDUAL)) {
@@ -274,6 +283,9 @@ public class BookingServiceImpl implements IBookingService {
                     throw new BadRequestException("Chỉ leader mới có thể huỷ booking này.");
                 }
             }
+            BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.CANCELLED);
+            bookingHistoryRepository.save(bookingHistory);
+
         } else {
             throw new BadRequestException("Không thể chuyển qua status REQUESTED");
         }
@@ -413,6 +425,11 @@ public class BookingServiceImpl implements IBookingService {
         booking.setStatus(BookingStatusEnum.PENDING_RESCHEDULE);
         bookingRepository.save(booking);
 
+        BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.PENDING_RESCHEDULE);
+
+        bookingHistoryRepository.save(bookingHistory);
+
+
         // Gửi thông báo cho team hoặc student để xác nhận
         sendRescheduleNotification(booking, newTimeFrame);
 
@@ -421,19 +438,12 @@ public class BookingServiceImpl implements IBookingService {
 
     @Override
     public Booking confirmRescheduleBooking(UUID bookingId, UUID newTimeFrameId, boolean isConfirmed) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findByIdAndStatus(bookingId, BookingStatusEnum.PENDING_RESCHEDULE)
                 .orElseThrow(() -> new BadRequestException("Booking không tồn tại."));
-
-        if (booking.getStatus() != BookingStatusEnum.PENDING_RESCHEDULE) {
-            throw new BadRequestException("Booking không ở trạng thái chờ xác nhận dời lịch.");
-        }
 
         if (!isConfirmed) {
             // Nếu từ chối, đưa booking về trạng thái ban đầu và không dời lịch
-            BookingHistory bookingHistory = new BookingHistory();
-            bookingHistory.setBooking(booking);
-            bookingHistory.setType(BookingStatusEnum.RESCHEDULE_REJECTED);
-            bookingHistory.setCreatedAt(LocalDateTime.now());
+            BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.RESCHEDULE_REJECTED);
             bookingHistoryRepository.save(bookingHistory);
 
             String title = "Dời lịch Booking ";
@@ -464,10 +474,7 @@ public class BookingServiceImpl implements IBookingService {
 
         // Ghi lịch sử dời lịch
 
-        BookingHistory bookingHistory = new BookingHistory();
-        bookingHistory.setBooking(booking);
-        bookingHistory.setType(BookingStatusEnum.RESCHEDULED);
-        bookingHistory.setCreatedAt(LocalDateTime.now());
+        BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.RESCHEDULED);
         bookingHistoryRepository.save(bookingHistory);
 
         String title = "Dời lịch Booking ";
