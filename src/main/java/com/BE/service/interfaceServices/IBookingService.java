@@ -26,4 +26,8 @@ public interface IBookingService {
     Booking getBookingById(UUID id);
     Booking saveBooking(Booking booking);
     List<BookingResponse> getBookingsClosestToNowByUser();
+
+    Booking requestRescheduleBooking(UUID bookingId, UUID newTimeFrameId);
+
+    Booking confirmRescheduleBooking(UUID bookingId, UUID newTimeFrameId, boolean isConfirmed);
 }

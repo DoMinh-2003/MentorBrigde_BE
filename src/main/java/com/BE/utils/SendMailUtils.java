@@ -1,5 +1,6 @@
 package com.BE.utils;
 
+import com.BE.model.EmailDetail;
 import com.BE.model.entity.User;
 import com.BE.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,17 @@ public class SendMailUtils {
             @Override
             public void run() {
                 emailService.sendMail(user, subject, description);
+            }
+
+        };
+        new Thread(r).start();
+    }
+
+    public void threadSendMailTemplate(EmailDetail emailDetail) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                emailService.sendMailTemplate(emailDetail);
             }
 
         };
