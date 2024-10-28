@@ -9,16 +9,14 @@ import com.BE.model.entity.*;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.request.BookingRequestFilter;
 import com.BE.model.request.BookingStatusRequest;
+import com.BE.model.request.RoomRequest;
 import com.BE.model.response.BookingResponse;
 import com.BE.repository.BookingHistoryRepository;
 import com.BE.repository.BookingRepository;
 import com.BE.repository.SemesterRepository;
 import com.BE.repository.TimeFrameRepository;
 import com.BE.service.GoogleMeetService;
-import com.BE.service.interfaceServices.IBookingService;
-import com.BE.service.interfaceServices.INotificationService;
-import com.BE.service.interfaceServices.ITeamService;
-import com.BE.service.interfaceServices.ITimeFrameService;
+import com.BE.service.interfaceServices.*;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 
@@ -73,6 +71,10 @@ public class BookingServiceImpl implements IBookingService {
         this.googleMeetService = googleMeetService;
         this.notificationService = notificationService;
     }
+
+
+    @Autowired
+    IChatService iChatService;
 
     @Override
     public Booking createBooking(UUID timeFrameId, BookingTypeEnum type) {
@@ -324,7 +326,31 @@ public class BookingServiceImpl implements IBookingService {
         }
         if (type.equals(BookingTypeEnum.TEAM)) {
             booking.setTeam(team);
+            Optional<Topic> topic = team.getTopics().stream().filter((t)-> t.getStatus().equals(TopicEnum.ACTIVE)).findFirst();
+            RoomRequest roomRequest = new RoomRequest();
+            if (topic.isPresent()) {
+                roomRequest.setName(team.getCode() + " - " + topic.get().getName());
+            } else {
+                // Xử lý trường hợp không có topic nào ACTIVE
+                roomRequest.setName(team.getCode() + " - No Active Topic");
+            }
+            List<UUID> members =
+                    team.getUserTeams().stream()
+                            .map(userTeam -> userTeam.getUser().getId()) // Giả sử User có phương thức getId() trả về UUID
+                            .collect(Collectors.toList());
+
+            User leader = team.getUserTeams().stream().filter(userTeam -> userTeam.getRole().equals(TeamRoleEnum.LEADER)).findFirst().get().getUser();
+            members.add(mentor.getId());
+            roomRequest.setMembers(members);
+            roomRequest.setLeaderId(leader.getId());
+            iChatService.createNewRoom(roomRequest);
         } else {
+            RoomRequest roomRequest = new RoomRequest();
+            List<UUID> members = new ArrayList<>();
+            members.add(mentor.getId());
+            members.add(currentUser.getId());
+            roomRequest.setMembers(members);
+            iChatService.createNewRoom(roomRequest);
             booking.setStudent(currentUser);
         }
         BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.REQUESTED);

@@ -25,4 +25,8 @@ public class Config {
 
     Duration minTimeSlotDuration;
 
+    int totalPoints;
+
+    int pointsDeducted;
+
 }
