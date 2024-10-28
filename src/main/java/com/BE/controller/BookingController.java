@@ -4,6 +4,7 @@ package com.BE.controller;
 
 import com.BE.enums.BookingStatusEnum;
 import com.BE.enums.BookingTypeEnum;
+import com.BE.model.entity.Booking;
 import com.BE.model.request.BookingStatusRequest;
 import com.BE.service.interfaceServices.IBookingService;
 import com.BE.utils.ResponseHandler;
@@ -12,6 +13,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/booking")
@@ -46,10 +49,10 @@ public class BookingController {
         return  responseHandler.response(200,"Change Status Booking Successfully", iBookingService.updateStatus(statusRequest));
     }
 
-
-
-
-
+    @GetMapping("/nearest")
+    public ResponseEntity getBookingsNearestToNow(){
+        return  responseHandler.response(200,"Get Booking Successfully", iBookingService.getBookingsClosestToNowByUser());
+    }
 
 
 
