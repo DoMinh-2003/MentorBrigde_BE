@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,4 +49,15 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
 
     Optional<Booking> findByIdAndStatus(UUID id, BookingStatusEnum status);
 //    List<Booking>  findByStudentName
+
+    @Query("SELECT b FROM Booking b WHERE (b.student = :user OR b.mentor = :user) " +
+            "AND DATE(b.timeFrame.timeFrameFrom) = " +
+            "(SELECT DATE(b2.timeFrame.timeFrameFrom) FROM Booking b2 " +
+            "WHERE (b2.student = :user OR b2.mentor = :user) " +
+            "AND b2.timeFrame.timeFrameFrom >= :currentDate " +
+            "ORDER BY b2.timeFrame.timeFrameFrom ASC LIMIT 1)")
+    List<Booking> findBookingsClosestToDateByUser(@Param("currentDate") LocalDateTime currentDate,
+                                                  @Param("user") User user);
+
+
 }

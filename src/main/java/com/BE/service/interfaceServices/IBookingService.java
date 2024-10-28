@@ -3,6 +3,7 @@ package com.BE.service.interfaceServices;
 import com.BE.enums.BookingStatusEnum;
 import com.BE.enums.BookingTypeEnum;
 import com.BE.model.entity.Booking;
+import com.BE.model.entity.User;
 import com.BE.model.request.BookingRequestFilter;
 import com.BE.model.request.BookingStatusRequest;
 import com.BE.model.response.BookingResponse;
@@ -24,4 +25,5 @@ public interface IBookingService {
     BookingResponse updateStatus(BookingStatusRequest statusRequest);
     Booking getBookingById(UUID id);
     Booking saveBooking(Booking booking);
+    List<BookingResponse> getBookingsClosestToNowByUser();
 }

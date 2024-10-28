@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -352,5 +353,12 @@ public class BookingServiceImpl implements IBookingService {
     @Override
     public Booking saveBooking(Booking booking) {
         return bookingRepository.save(booking);
+    }
+
+    @Override
+    public List<BookingResponse> getBookingsClosestToNowByUser(){
+        User user = accountUtils.getCurrentUser();
+        LocalDateTime nowInHoChiMinh = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return bookingRepository.findBookingsClosestToDateByUser(nowInHoChiMinh, user).stream().map(bookingMapper::toBookingResponse).collect(Collectors.toList());
     }
 }
