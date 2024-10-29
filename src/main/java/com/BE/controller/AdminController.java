@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -47,5 +48,10 @@ public class AdminController {
             @RequestParam(defaultValue = "10") int size) {
         Page users = adminService.searchUsers(search, role, page, size);
         return responseHandler.response(200, "Get Student Successfully", users);
+    }
+    @GetMapping("/stats")
+    public ResponseEntity getDashboardStats(){
+        Map<String, Object> stats = adminService.getDashboardStats();
+        return ResponseEntity.ok(stats);
     }
 }

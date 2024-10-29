@@ -8,6 +8,7 @@ import com.BE.model.response.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.UUID;
 
 public interface IAdminService {
@@ -19,4 +20,6 @@ public interface IAdminService {
     ConfigResponse getConfig();
 
     ConfigResponse updateConfig(UUID id, ConfigRequest configRequest);
+
+     Map<String, Object> getDashboardStats();
 }
