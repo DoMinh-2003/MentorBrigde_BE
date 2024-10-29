@@ -18,7 +18,7 @@ import java.util.UUID;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpecificationExecutor<Booking>{
     boolean existsByTimeFrameIdAndStatus(UUID timeFrameId, BookingStatusEnum status);
-
+    List<Booking> findByMentorId(UUID mentorId);
 
     @Query("SELECT b FROM Booking b WHERE b.mentor = :mentor AND b.status = :status AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
     List<Booking> findByMentorAndStatusAndSemesterAndTimeFrameMonth(@Param("mentor") User mentor,

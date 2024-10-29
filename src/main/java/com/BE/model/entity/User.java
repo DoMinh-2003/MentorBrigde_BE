@@ -110,6 +110,9 @@
         @JsonIgnore
         Set<Message> messages = new HashSet<>();
 
+        @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+        @JsonIgnore
+        Set<Feedback> feedbacks = new HashSet<>();
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {

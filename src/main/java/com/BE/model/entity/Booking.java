@@ -57,4 +57,7 @@ public class Booking {
     @JoinColumn(name = "semester_id")
     @JsonIgnore
     Semester semester;
+
+    @OneToMany(mappedBy = "booking")
+    Set<Feedback> feedbacks = new HashSet<>();
 }
