@@ -509,6 +509,11 @@ public class BookingServiceImpl implements IBookingService {
         }
     }
 
+    @Override
+    public List<Booking> getBookingsByMentorId(UUID mentorId) {
+        List<Booking> bookings = bookingRepository.findByMentorId(mentorId);
+        return bookings;
+    }
 
 
 

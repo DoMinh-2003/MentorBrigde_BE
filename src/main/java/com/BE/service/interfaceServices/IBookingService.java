@@ -24,6 +24,7 @@ public interface IBookingService {
 
     BookingResponse updateStatus(BookingStatusRequest statusRequest);
     Booking getBookingById(UUID id);
+    List<Booking> getBookingsByMentorId(UUID mentorId);
     Booking saveBooking(Booking booking);
     List<BookingResponse> getBookingsClosestToNowByUser();
 
