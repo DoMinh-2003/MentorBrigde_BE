@@ -116,21 +116,21 @@ public class TopicImpl implements ITopicService {
     @Override
     public FileResponse getFile(UUID id) {
         File file = fileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("File not found"));
+                .orElseThrow(() -> new NotFoundException("File not found"));
         return  fileMapper.toFileResponse(file);
     }
 
     @Override
     public TopicResponse getTopic(UUID id) {
         Topic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Topic not found"));
+                .orElseThrow(() -> new NotFoundException("Topic not found"));
         return topicMapper.toTopicResponse(topicRepository.save(topic));
     }
 
     @Override
     public TopicResponse updateTopic(UUID id, MultipartFile file) throws IOException {
         Topic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Topic not found"));
+                .orElseThrow(() -> new NotFoundException("Topic not found"));
         File document = new File();
         document.setName(file.getOriginalFilename());
         document.setContent(file.getBytes());
