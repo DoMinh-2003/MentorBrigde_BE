@@ -11,6 +11,7 @@ import com.BE.model.entity.Semester;
 import com.BE.model.entity.User;
 import com.BE.model.request.ConfigRequest;
 import com.BE.model.response.ConfigResponse;
+import com.BE.model.response.MostBookedMentorResponse;
 import com.BE.model.response.UserResponse;
 import com.BE.repository.ConfigRepository;
 import com.BE.repository.SemesterRepository;
@@ -25,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AdminServiceImpl implements IAdminService {
@@ -131,6 +129,39 @@ public class AdminServiceImpl implements IAdminService {
         return configMapper.toConfigResponse(configRepository.save(config));
     }
 
+    @Override
+    public Map<String, Object> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+        // Số lượng STUDENT
+        long studentCount = userRepository.countByRole(RoleEnum.STUDENT);
+        stats.put("studentCount", studentCount);
+
+        // Số lượng MENTOR
+        long mentorCount = userRepository.countByRole(RoleEnum.MENTOR);
+        stats.put("mentorCount", mentorCount);
+
+        // Top 5 Mentor được book nhiều nhất trong kỳ
+        try {
+            List<MostBookedMentorResponse> topMentors = getTop5MostBookedMentors(SemesterEnum.ACTIVE);
+            stats.put("top5MostBookedMentors", topMentors);
+        } catch (NotFoundException e) {
+            stats.put("top5MostBookedMentors", "No bookings found for mentors in the semester");
+        }
+        return stats;
+    }
+
+    public List<MostBookedMentorResponse> getTop5MostBookedMentors(SemesterEnum semesterEnum) {
+        Semester semester = semesterRepository.findByStatus(semesterEnum)
+                .orElseThrow(() -> new NotFoundException("Semester not found"));
+
+        List<MostBookedMentorResponse> topMentors = userRepository.findTop5MostBookedMentorsInSemester(semester.getId());
+
+        if (!topMentors.isEmpty()) {
+            return topMentors;
+        } else {
+            throw new NotFoundException("No bookings found for mentors in the semester");
+        }
+    }
 
     private boolean isUserExists(User user) {
         return userRepository.existsByStudentCode(user.getStudentCode()) ||
