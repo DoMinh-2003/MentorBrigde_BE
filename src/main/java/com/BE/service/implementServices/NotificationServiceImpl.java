@@ -49,8 +49,15 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public List<Notification> getNotifications(){
         List<Notification> notifications = notificationRepository.findByUserId(accountUtils.getCurrentUser().getId());
-        notifications.forEach(notification -> notification.setIsRead(true));
-        return  notificationRepository.saveAll(notifications);
+        return  notifications;
+    }
+    @Override
+    public void updateNotification() {
+        List<Notification> notifications = notificationRepository.findByUserId(accountUtils.getCurrentUser().getId());
+        notifications.forEach(notification -> {
+            notification.setIsRead(true);
+            notificationRepository.save(notification);
+        });
     }
 
 }
