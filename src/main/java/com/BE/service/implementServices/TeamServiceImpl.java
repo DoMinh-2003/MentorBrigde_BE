@@ -223,6 +223,7 @@ public class TeamServiceImpl implements ITeamService {
         if (team.getTopics().stream().noneMatch(existingTopic ->
                 TopicEnum.ACTIVE.equals(existingTopic.getStatus()) || TopicEnum.PENDING.equals(existingTopic.getStatus()))) {
             team.getTopics().add(topic);
+            topic.setStatus(TopicEnum.ACTIVE);
             UserTeam userTeam = new UserTeam();
             userTeam.setRole(TeamRoleEnum.MENTOR);
             userTeam.setTeam(team);
