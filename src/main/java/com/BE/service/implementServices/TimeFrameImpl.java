@@ -129,7 +129,7 @@ public class TimeFrameImpl implements ITimeFrameService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        long delay = timeFrame.getTimeFrameFrom().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long delay = timeFrame.getTimeFrameTo().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
         executorService.schedule(() -> {
             timeFrame.setTimeFrameStatus(TimeFrameStatus.EXPIRED);
