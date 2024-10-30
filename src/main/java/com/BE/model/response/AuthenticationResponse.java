@@ -31,6 +31,6 @@ public class AuthenticationResponse {
      String gender;
      String dayOfBirth;
      String teamCode;
-
+     int points;
 }
 
