@@ -1,5 +1,6 @@
 package com.BE.service.implementServices;
 
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.entity.Notification;
 import com.BE.model.entity.User;
 import com.BE.repository.NotificationRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NotificationServiceImpl implements INotificationService {
@@ -58,6 +60,15 @@ public class NotificationServiceImpl implements INotificationService {
             notification.setIsRead(true);
             notificationRepository.save(notification);
         });
+    }
+
+    @Override
+    public void updateNotificationByid(UUID id) {
+        Notification notification = notificationRepository.findById(id).orElseThrow(() -> new NotFoundException("Not found notification"));
+
+            notification.setIsRead(true);
+            notificationRepository.save(notification);
+
     }
 
 }

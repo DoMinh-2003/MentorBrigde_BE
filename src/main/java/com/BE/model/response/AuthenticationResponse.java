@@ -2,6 +2,7 @@ package com.BE.model.response;
 
 
 import com.BE.enums.RoleEnum;
+import com.BE.model.entity.Semester;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
@@ -32,5 +33,6 @@ public class AuthenticationResponse {
      String dayOfBirth;
      String teamCode;
      int points;
+     Set<Semester> semesters;
 }
 
