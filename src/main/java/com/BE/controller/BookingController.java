@@ -6,6 +6,7 @@ import com.BE.enums.BookingStatusEnum;
 import com.BE.enums.BookingTypeEnum;
 import com.BE.model.entity.Booking;
 import com.BE.model.request.BookingStatusRequest;
+import com.BE.model.response.DataResponseDTO;
 import com.BE.service.interfaceServices.IBookingService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -55,6 +56,7 @@ public class BookingController {
         return  responseHandler.response(200,"Get Booking Successfully", iBookingService.getBookingsClosestToNowByUser());
     }
 
+
     @PutMapping("/{bookingId}/reschedule")
     public ResponseEntity<Booking> requestRescheduleBooking(
             @PathVariable UUID bookingId,
@@ -62,6 +64,13 @@ public class BookingController {
 
         Booking rescheduledBooking = iBookingService.requestRescheduleBooking(bookingId, newTimeFrameId);
         return ResponseEntity.ok(rescheduledBooking);
+    }
+
+    @PostMapping("/booking")
+    public ResponseEntity<DataResponseDTO<Object>> createBooking(@RequestParam UUID timeFrameId,
+                                                                 @RequestParam BookingTypeEnum type) {
+        return responseHandler.response(200, "Create booking success!",
+                iBookingService.createBooking(timeFrameId, type));
     }
 
     @PutMapping("/{bookingId}/confirm-reschedule")
