@@ -58,9 +58,7 @@
 
         int points;
 
-        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-        @JsonIgnore
-        Set<RefreshToken> refreshTokens = new HashSet<>();
+
 
 
         @ManyToMany

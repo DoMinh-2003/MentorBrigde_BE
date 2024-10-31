@@ -91,12 +91,7 @@ public class StudentController {
         teamService.setTeamLeader(email, teamCode);
         return ResponseEntity.ok( "Set leader successfully!");
     }
-    @PostMapping("/booking")
-    public ResponseEntity<DataResponseDTO<Object>> createBooking(@RequestParam UUID timeFrameId,
-                                                                 @RequestParam BookingTypeEnum type) {
-        return responseHandler.response(200, "Create booking success!",
-                bookingService.createBooking(timeFrameId, type));
-    }
+
     @GetMapping("/team")
     public ResponseEntity<DataResponseDTO<Object>> getTeam(@RequestParam(required = false) String teamCode) {
         Team team = teamService.getTeamByCode(teamCode);

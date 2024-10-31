@@ -88,7 +88,6 @@ public class BookingServiceImpl implements IBookingService {
     @Override
     public Booking createBooking(UUID timeFrameId, BookingTypeEnum type) {
         TimeFrame timeFrame = timeFrameService.getById(timeFrameId);
-
         validateTimeFrame(timeFrame);
         User currentUser = accountUtils.getCurrentUser();
         User mentor = timeFrame.getMentor();
