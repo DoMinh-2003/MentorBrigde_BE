@@ -66,7 +66,7 @@ public class BookingController {
         return ResponseEntity.ok(rescheduledBooking);
     }
 
-    @PostMapping("/booking")
+    @PostMapping("")
     public ResponseEntity<DataResponseDTO<Object>> createBooking(@RequestParam UUID timeFrameId,
                                                                  @RequestParam BookingTypeEnum type) {
         return responseHandler.response(200, "Create booking success!",
