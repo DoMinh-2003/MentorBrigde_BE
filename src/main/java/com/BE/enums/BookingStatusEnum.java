@@ -10,5 +10,7 @@ public enum BookingStatusEnum {
 
     PENDING_RESCHEDULE,
 
-    RESCHEDULE_REJECTED
+    RESCHEDULE_REJECTED,
+
+    FINISHED
 }

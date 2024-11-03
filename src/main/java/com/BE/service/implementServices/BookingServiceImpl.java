@@ -292,6 +292,7 @@ public class BookingServiceImpl implements IBookingService {
         return bookingMapper.toBookingResponse(bookingRepository.save(booking));
     }
 
+
     private void sendNotificationForTeam(Booking booking, String message, String title) {
         if (booking.getTeam() != null) {
             Set<UserTeam> userTeams = booking.getTeam().getUserTeams();
@@ -514,6 +515,12 @@ public class BookingServiceImpl implements IBookingService {
         return bookings;
     }
 
-
+    @Override
+    public BookingResponse updateFinishStatusBooking(UUID bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BadRequestException("Booking not found"));
+        booking.setStatus(BookingStatusEnum.FINISHED);
+        return bookingMapper.toBookingResponse(bookingRepository.save(booking));
+    }
 
 }
