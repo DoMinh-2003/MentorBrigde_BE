@@ -83,7 +83,12 @@ public class BookingController {
         return ResponseEntity.ok(updatedBooking);
     }
 
+    @PatchMapping("/{bookingId}/finish")
+    public ResponseEntity finishBooking(@PathVariable UUID bookingId) {
+        return responseHandler.response(200, "Update Finish status of booking success!",
+                iBookingService.updateFinishStatusBooking(bookingId));
 
+    }
 
 
 }
