@@ -403,10 +403,25 @@ public class BookingServiceImpl implements IBookingService {
     }
 
     @Override
-    public List<BookingResponse> getBookingsClosestToNowByUser(){
+    public List<BookingResponse> getBookingsClosestToNowByUser() {
         User user = accountUtils.getCurrentUser();
+        UserTeam userTeam = teamService.getCurrentUserTeam();
+        Team team = userTeam.getTeam();
         LocalDateTime nowInHoChiMinh = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        return bookingRepository.findBookingsClosestToDateByUser(nowInHoChiMinh, user).stream().map(bookingMapper::toBookingResponse).collect(Collectors.toList());
+
+        if (user.getRole() == RoleEnum.STUDENT) {
+            // Student search includes team filter
+            return bookingRepository.findBookingsClosestToDateTimeByStudent(nowInHoChiMinh, user, team)
+                    .stream()
+                    .map(bookingMapper::toBookingResponse)
+                    .collect(Collectors.toList());
+        } else {
+            // Mentor search excludes team filter
+            return bookingRepository.findBookingsClosestToDateTimeByMentor(nowInHoChiMinh, user)
+                    .stream()
+                    .map(bookingMapper::toBookingResponse)
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
