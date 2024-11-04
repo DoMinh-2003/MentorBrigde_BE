@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,4 +40,11 @@ public class Room {
 
     @OneToMany(mappedBy = "room")
     private List<Message> messages;
+
+
+    @OneToOne(mappedBy = "room", cascade = CascadeType.ALL)
+    @JsonIgnore
+    Booking booking;
+
+
 }

@@ -225,9 +225,11 @@ public class TopicImpl implements ITopicService {
                         topic.getCreator(),true);
             }else{
                 topic.setStatus(TopicEnum.APPROVED);
-                notificationService.createNotification("Phê duyệt topic", "topic của bạn đã bị từ chối ",
-                        topic.getCreator(),true);
             }
+        }else{
+            topic.setStatus(TopicEnum.REJECTED);
+            notificationService.createNotification("Phê duyệt topic", "topic của bạn đã bị từ chối ",
+                    topic.getCreator(),true);
         }
         return topicMapper.toTopicResponse(topicRepository.save(topic));
     }

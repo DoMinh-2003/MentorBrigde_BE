@@ -42,7 +42,7 @@ public class BookingController {
     }
 
     @GetMapping
-    public ResponseEntity getBooking(@RequestParam(required = false) BookingTypeEnum type, @RequestParam BookingStatusEnum status){
+    public ResponseEntity getBooking(@RequestParam(required = false) BookingTypeEnum type, @RequestParam(required = false) BookingStatusEnum status){
         return  responseHandler.response(200,"Get Booking Successfully", iBookingService.getBooking(type, status));
     }
 
