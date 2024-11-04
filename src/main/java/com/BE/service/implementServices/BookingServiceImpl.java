@@ -576,13 +576,15 @@ public class BookingServiceImpl implements IBookingService {
 
     private void sendRescheduleNotification(Booking booking, TimeFrame newTimeFrame) {
         List<User> recipients = new ArrayList<>();
-
-        if (booking.getType() == BookingTypeEnum.TEAM && booking.getTeam() != null) {
+        String message = "";
+        if (booking.getType().equals(BookingTypeEnum.TEAM) && booking.getTeam() != null) {
             recipients.addAll(booking.getTeam().getUserTeams().stream()
                     .map(UserTeam::getUser)
                     .collect(Collectors.toList()));
+            message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
         } else if (booking.getStudent() != null) {
             recipients.add(booking.getStudent());
+            message = "Đã dời lịch Booking của bạn";
         }
 
         for (User recipient : recipients) {
@@ -594,7 +596,6 @@ public class BookingServiceImpl implements IBookingService {
             emailDetail.setLink("http://localhost:5173/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
             sendMailUtils.threadSendMailTemplate(emailDetail);
             String title = "Dời lịch Booking";
-            String message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
             notificationService.createNotification(title, message, recipient,false);
         }
     }
