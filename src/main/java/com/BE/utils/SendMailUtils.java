@@ -23,6 +23,7 @@ public class SendMailUtils {
     }
 
     public void threadSendMailTemplate(EmailDetail emailDetail) {
+        System.out.println("send r nha");
         Runnable r = new Runnable() {
             @Override
             public void run() {

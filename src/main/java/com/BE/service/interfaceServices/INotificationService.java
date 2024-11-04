@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface INotificationService {
-    void createNotification(String title, String message, User user, boolean sendMailStatus);
+    void    createNotification(String title, String message, User user, boolean sendMailStatus);
     List<Notification> getNotifications();
     void updateNotification();
     void updateNotificationByid(UUID id);

@@ -253,6 +253,7 @@ public class BookingServiceImpl implements IBookingService {
                 .withIdentity("completeTrigger_" + booking.getId(), "bookings")
                 .startAt(Date.from(booking.getTimeFrame().getTimeFrameTo().atZone(ZoneId.systemDefault()).toInstant()))
                 .build();
+        System.out.println("Booking with status has been into trigger"+booking.getId());
         try {
             scheduler.scheduleJob(completeJobDetail, completeTrigger);
         } catch (SchedulerException e) {
@@ -547,7 +548,7 @@ public class BookingServiceImpl implements IBookingService {
             emailDetail.setFullName(recipient.getFullName());
             emailDetail.setRecipient(recipient.getEmail());
             emailDetail.setButtonValue("Xem lịch booking mới");
-            emailDetail.setLink("http://localhost5173/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
+            emailDetail.setLink("http://localhost:5173/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
             sendMailUtils.threadSendMailTemplate(emailDetail);
             String title = "Dời lịch Booking";
             String message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
