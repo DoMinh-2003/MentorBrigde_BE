@@ -25,6 +25,7 @@ public class AuthenticationResponse {
      @Enumerated(value = EnumType.STRING)
      RoleEnum role;
      String token;
+     String refreshToken;
      String phone;
      String address;
      String avatar;
@@ -34,5 +35,6 @@ public class AuthenticationResponse {
      String teamCode;
      int points;
      Set<Semester> semesters;
+
 }
 
