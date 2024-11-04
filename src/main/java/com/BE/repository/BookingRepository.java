@@ -1,8 +1,10 @@
 package com.BE.repository;
 
 import com.BE.enums.BookingStatusEnum;
+import com.BE.enums.RoleEnum;
 import com.BE.model.entity.Booking;
 import com.BE.model.entity.Semester;
+import com.BE.model.entity.Team;
 import com.BE.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -50,14 +52,27 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
     Optional<Booking> findByIdAndStatus(UUID id, BookingStatusEnum status);
 //    List<Booking>  findByStudentName
 
-    @Query("SELECT b FROM Booking b WHERE (b.student = :user OR b.mentor = :user) " +
-            "AND DATE(b.timeFrame.timeFrameFrom) = " +
-            "(SELECT DATE(b2.timeFrame.timeFrameFrom) FROM Booking b2 " +
-            "WHERE (b2.student = :user OR b2.mentor = :user) " +
-            "AND b2.timeFrame.timeFrameFrom >= :currentDate " +
-            "ORDER BY b2.timeFrame.timeFrameFrom ASC LIMIT 1)")
-    List<Booking> findBookingsClosestToDateByUser(@Param("currentDate") LocalDateTime currentDate,
-                                                  @Param("user") User user);
+
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.timeFrame tf " +
+            "WHERE b.status = 'ACCEPTED' " +
+            "AND ((b.type = 'TEAM' AND b.team = :team) " +
+            "OR (b.type <> 'TEAM' AND b.student = :user)) " +
+            "AND tf.timeFrameFrom >= :currentDateTime " +
+            "ORDER BY tf.timeFrameFrom ASC")
+    List<Booking> findBookingsClosestToDateTimeByStudent(@Param("currentDateTime") LocalDateTime currentDateTime,
+                                                         @Param("user") User user,
+                                                         @Param("team") Team team);
+
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.timeFrame tf " +
+            "WHERE b.mentor = :user " +
+            "AND b.status = 'ACCEPTED' " +
+            "AND tf.timeFrameFrom >= :currentDateTime " +
+            "ORDER BY tf.timeFrameFrom ASC")
+    List<Booking> findBookingsClosestToDateTimeByMentor(@Param("currentDateTime") LocalDateTime currentDateTime,
+                                                         @Param("user") User user);
+
 
 
 }
