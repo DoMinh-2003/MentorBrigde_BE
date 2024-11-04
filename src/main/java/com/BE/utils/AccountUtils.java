@@ -12,7 +12,7 @@ public class AccountUtils {
     UserRepository userRepository;
 
     public User getCurrentUser(){
-        String userName=  SecurityContextHolder.getContext().getAuthentication().getName();
+        String userName =  SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(userName).orElseThrow();
         return user;
         }
