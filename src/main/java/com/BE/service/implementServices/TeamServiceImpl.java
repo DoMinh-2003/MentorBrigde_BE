@@ -6,6 +6,7 @@ import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.model.EmailDetail;
 import com.BE.model.entity.*;
+import com.BE.repository.ConfigRepository;
 import com.BE.repository.TeamRepository;
 import com.BE.repository.UserTeamRepository;
 import com.BE.service.EmailService;
@@ -13,6 +14,7 @@ import com.BE.service.JWTService;
 import com.BE.service.interfaceServices.*;
 
 import com.BE.utils.AccountUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +57,9 @@ public class TeamServiceImpl implements ITeamService {
         this.topicService = topicService;
     }
 
+    @Autowired
+    ConfigRepository configRepository;
+
     @Override
     @Transactional
     public Team createTeam() {
@@ -63,6 +68,7 @@ public class TeamServiceImpl implements ITeamService {
         if (userTeamRepository.existsByUserId(user.getId())) {
             throw new IllegalArgumentException("You already have a team. Please out of it before creating a new one.");
         }
+        Config config = configRepository.findFirstBy();
         // Create a new team
         Team team = new Team();
         // Generate team code and set it
@@ -70,6 +76,7 @@ public class TeamServiceImpl implements ITeamService {
         team.setCode(generateGroupCode(semester));
         team.setCreatedAt(LocalDate.now());
         team.setSemester(semester);
+        team.setPoints(config.getTotalTeamPoints());
         // Save the team
         teamRepository.save(team);
 

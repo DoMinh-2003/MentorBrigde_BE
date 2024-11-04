@@ -28,6 +28,8 @@ public class Team {
 
     LocalDate createdAt;
 
+    int points;
+
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "semester_id")

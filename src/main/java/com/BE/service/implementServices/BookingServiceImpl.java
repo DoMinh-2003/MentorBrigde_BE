@@ -12,10 +12,7 @@ import com.BE.model.request.BookingRequestFilter;
 import com.BE.model.request.BookingStatusRequest;
 import com.BE.model.request.RoomRequest;
 import com.BE.model.response.BookingResponse;
-import com.BE.repository.BookingHistoryRepository;
-import com.BE.repository.BookingRepository;
-import com.BE.repository.SemesterRepository;
-import com.BE.repository.TimeFrameRepository;
+import com.BE.repository.*;
 import com.BE.service.CompleteBookingJob;
 import com.BE.service.GoogleMeetService;
 import com.BE.service.JWTService;
@@ -68,6 +65,12 @@ public class BookingServiceImpl implements IBookingService {
     @Autowired
     Scheduler scheduler;
 
+    @Autowired
+    TeamRepository teamRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
     public BookingServiceImpl(BookingRepository bookingRepository,
                               ITimeFrameService timeFrameService,
                               AccountUtils accountUtils,
@@ -90,8 +93,12 @@ public class BookingServiceImpl implements IBookingService {
     @Autowired
     IChatService iChatService;
 
+    @Autowired
+    ConfigRepository configRepository;
+
     @Override
     public Booking createBooking(UUID timeFrameId, BookingTypeEnum type) {
+        Config config = configRepository.findFirstBy();
         TimeFrame timeFrame = timeFrameService.getById(timeFrameId);
         validateTimeFrame(timeFrame);
         User currentUser = accountUtils.getCurrentUser();
@@ -102,10 +109,17 @@ public class BookingServiceImpl implements IBookingService {
             UserTeam userTeam = teamService.getCurrentUserTeam();
             String teamCode = userTeam.getTeam().getCode();
             team = validateTeamBooking(currentUser, teamCode);
+            if(team.getPoints() < config.getPointsDeducted()){
+                throw new BadRequestException("Nhóm bạn không đủ điểm để đặt lịch");
+            }
             name = userTeam.getTeam().getCode();
+        }else{
+            if(currentUser.getPoints() < config.getPointsDeducted()){
+                throw new BadRequestException("Bạn không đủ điểm để đặt lịch");
+            }
         }
 
-        Booking booking = createNewBooking(timeFrame, currentUser, mentor, team, type);
+        Booking booking = createNewBooking(config, timeFrame, currentUser, mentor, team, type);
         // Gửi thông báo cho mentor
         notificationService.createNotification("Đặt lịch mentor",
                 name + " đặt lịch mentor " +
@@ -240,6 +254,7 @@ public class BookingServiceImpl implements IBookingService {
 
     @Override
     public BookingResponse updateStatus(BookingStatusRequest statusRequest) {
+        Config config = configRepository.findFirstBy();
         User user = accountUtils.getCurrentUser();
         Booking booking = bookingRepository.findByIdAndStatus(statusRequest.getId(), BookingStatusEnum.REQUESTED).orElseThrow(() -> new NotFoundException("Booking này không tồn tại"));
 
@@ -269,6 +284,15 @@ public class BookingServiceImpl implements IBookingService {
                 String title = "Phản hồi của Mentor";
                 if (statusRequest.getStatus().equals(BookingStatusEnum.REJECTED)) {
                     message = "Mentor đã từ chối booking của bạn";
+                    if(booking.getType().equals(BookingTypeEnum.TEAM)){
+                        Team team = booking.getTeam();
+                        team.setPoints(team.getPoints() + config.getPointsDeducted());
+                        teamRepository.save(team);
+                    }else{
+                        User student = booking.getStudent();
+                        student.setPoints(student.getPoints() + config.getPointsDeducted());
+                        userRepository.save(student);
+                    }
                 }
                 sendNotificationForTeam(booking, message,title);
             } else {
@@ -358,7 +382,8 @@ public class BookingServiceImpl implements IBookingService {
         return userTeam.getTeam();
     }
 
-    private Booking createNewBooking(TimeFrame timeFrame, User currentUser, User mentor, Team team, BookingTypeEnum type) {
+    private Booking createNewBooking(Config config,TimeFrame timeFrame, User currentUser, User mentor, Team team, BookingTypeEnum type) {
+
         Booking booking = new Booking();
         booking.setCreatedAt(LocalDateTime.now());
         booking.setMentor(mentor);
@@ -374,6 +399,8 @@ public class BookingServiceImpl implements IBookingService {
         }
         if (type.equals(BookingTypeEnum.TEAM)) {
             booking.setTeam(team);
+            team.setPoints(team.getPoints() - config.getPointsDeducted());
+            teamRepository.save(team);
             Optional<Topic> topic = team.getTopics().stream().filter((t)-> t.getStatus().equals(TopicEnum.ACTIVE)).findFirst();
             RoomRequest roomRequest = new RoomRequest();
             if (topic.isPresent()) {
@@ -400,6 +427,8 @@ public class BookingServiceImpl implements IBookingService {
             roomRequest.setMembers(members);
             iChatService.createNewRoom(roomRequest);
             booking.setStudent(currentUser);
+            currentUser.setPoints(currentUser.getPoints() - config.getPointsDeducted());
+            userRepository.save(currentUser);
         }
 
 
@@ -486,11 +515,20 @@ public class BookingServiceImpl implements IBookingService {
 
     @Override
     public Booking confirmRescheduleBooking(UUID bookingId, UUID newTimeFrameId, boolean isConfirmed) {
+        Config config = configRepository.findFirstBy();
         Booking booking = bookingRepository.findByIdAndStatus(bookingId, BookingStatusEnum.PENDING_RESCHEDULE)
                 .orElseThrow(() -> new BadRequestException("Booking không tồn tại."));
 
         if (!isConfirmed) {
-            // Nếu từ chối, đưa booking về trạng thái ban đầu và không dời lịch
+            if(booking.getType().equals(BookingTypeEnum.TEAM)){
+                Team team = booking.getTeam();
+                team.setPoints(team.getPoints() + config.getPointsDeducted());
+                teamRepository.save(team);
+            }else{
+                User student = booking.getStudent();
+                student.setPoints(student.getPoints() + config.getPointsDeducted());
+                userRepository.save(student);
+            }
             BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.RESCHEDULE_REJECTED);
             bookingHistoryRepository.save(bookingHistory);
 
