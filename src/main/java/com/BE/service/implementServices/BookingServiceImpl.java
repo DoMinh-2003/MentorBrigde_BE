@@ -526,22 +526,24 @@ public class BookingServiceImpl implements IBookingService {
         Config config = configRepository.findFirstBy();
         Booking booking = bookingRepository.findByIdAndStatus(bookingId, BookingStatusEnum.PENDING_RESCHEDULE)
                 .orElseThrow(() -> new BadRequestException("Booking không tồn tại."));
-
+        String message = "";
         if (!isConfirmed) {
             if(booking.getType().equals(BookingTypeEnum.TEAM)){
                 Team team = booking.getTeam();
                 team.setPoints(team.getPoints() + config.getPointsDeducted());
                 teamRepository.save(team);
+                message =  "Nhóm " + booking.getTeam().getCode() + " đã từ chối dời lịch Booking";
             }else{
                 User student = booking.getStudent();
                 student.setPoints(student.getPoints() + config.getPointsDeducted());
                 userRepository.save(student);
+                message = student.getFullName() +  " đã từ chối dời lịch Booking";
             }
             BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.RESCHEDULE_REJECTED);
             bookingHistoryRepository.save(bookingHistory);
 
             String title = "Dời lịch Booking ";
-            String message =  "Nhóm " + booking.getTeam().getCode() + " đã từ chối dời lịch Booking";
+
             notificationService.createNotification(title, message, booking.getMentor(),true);
             return booking;
         }
