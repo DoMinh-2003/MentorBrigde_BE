@@ -22,11 +22,11 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
     boolean existsByTimeFrameIdAndStatus(UUID timeFrameId, BookingStatusEnum status);
     List<Booking> findByMentorId(UUID mentorId);
 
-    @Query("SELECT b FROM Booking b WHERE b.mentor = :mentor AND b.status = :status AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
-    List<Booking> findByMentorAndStatusAndSemesterAndTimeFrameMonth(@Param("mentor") User mentor,
-                                                                    @Param("status") BookingStatusEnum status,
-                                                                    @Param("semester") Semester semester,
-                                                                    @Param("month") int month);
+    @Query("SELECT b FROM Booking b WHERE b.mentor = :mentor AND b.status IN :statuses AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
+    List<Booking> findByMentorAndStatusesAndSemesterAndTimeFrameMonth(@Param("mentor") User mentor,
+                                                                      @Param("statuses") List<BookingStatusEnum> statuses,
+                                                                      @Param("semester") Semester semester,
+                                                                      @Param("month") int month);
 
 
 //    @Query("SELECT b FROM Booking b JOIN b.team t JOIN t.userTeams ut WHERE (b.student = :student OR ut.user = :student) AND b.status = :status AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
@@ -35,16 +35,17 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
 //                                                                                 @Param("semester") Semester semester,
 //                                                                                 @Param("month") int month);
 
+
     @Query("SELECT b FROM Booking b " +
             "LEFT JOIN b.team t " +
             "LEFT JOIN t.userTeams ut " +
             "WHERE (b.student = :student OR ut.user = :student) " +
-            "AND b.status = :status " +
+            "AND b.status IN :statuses " +
             "AND b.semester = :semester " +
             "AND MONTH(b.timeFrame.timeFrameFrom) = :month")
-    List<Booking> findByStudentOrTeamMemberAndStatusAndSemesterAndTimeFrameMonth(
+    List<Booking> findByStudentOrTeamMemberAndStatusesAndSemesterAndTimeFrameMonth(
             @Param("student") User student,
-            @Param("status") BookingStatusEnum status,
+            @Param("statuses") List<BookingStatusEnum> statuses,
             @Param("semester") Semester semester,
             @Param("month") int month);
 

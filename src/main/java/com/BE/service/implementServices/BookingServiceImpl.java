@@ -137,7 +137,8 @@ public class BookingServiceImpl implements IBookingService {
                 .orElseThrow(() -> new NotFoundException("Active semester not found"));
 
         // Tìm các booking dựa trên mentor, status, semester và month từ TimeFrame
-        List<Booking> bookings = bookingRepository.findByMentorAndStatusAndSemesterAndTimeFrameMonth(user, BookingStatusEnum.ACCEPTED, semester, month);
+        List<BookingStatusEnum> statuses = Arrays.asList(BookingStatusEnum.ACCEPTED,BookingStatusEnum.PENDING_RESCHEDULE, BookingStatusEnum.RESCHEDULED);
+        List<Booking> bookings = bookingRepository.findByMentorAndStatusesAndSemesterAndTimeFrameMonth(user, statuses, semester, month);
 
         // Sắp xếp danh sách theo timeFrameFrom (từ ngày sớm nhất đến muộn nhất)
         bookings.sort(Comparator.comparing(booking -> booking.getTimeFrame().getTimeFrameFrom()));
@@ -166,7 +167,9 @@ public class BookingServiceImpl implements IBookingService {
                 .orElseThrow(() -> new NotFoundException("Active semester not found"));
 
         // Tìm các booking dựa trên student hoặc member team, status, semester và month từ TimeFrame
-        List<Booking> bookings = bookingRepository.findByStudentOrTeamMemberAndStatusAndSemesterAndTimeFrameMonth(user, BookingStatusEnum.ACCEPTED, semester, month);
+
+        List<BookingStatusEnum> statuses = Arrays.asList(BookingStatusEnum.ACCEPTED,BookingStatusEnum.PENDING_RESCHEDULE, BookingStatusEnum.RESCHEDULED);
+        List<Booking> bookings = bookingRepository.findByStudentOrTeamMemberAndStatusesAndSemesterAndTimeFrameMonth(user, statuses, semester, month);
 
         // Sắp xếp danh sách theo timeFrameFrom (từ ngày sớm nhất đến muộn nhất)
         bookings.sort(Comparator.comparing(booking -> booking.getTimeFrame().getTimeFrameFrom()));
