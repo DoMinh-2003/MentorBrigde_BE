@@ -2,11 +2,13 @@ package com.BE.service;
 
 import com.BE.enums.TimeFrameStatus;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.model.EmailDetail;
 import com.BE.model.entity.Booking;
 import com.BE.model.entity.TimeFrame;
 import com.BE.repository.BookingRepository;
 import com.BE.repository.TimeFrameRepository;
 import com.BE.service.interfaceServices.INotificationService;
+import com.BE.utils.SendMailUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -28,6 +30,9 @@ public class CompleteBookingJob implements Job {
     BookingRepository bookingRepository;
     @Autowired
     INotificationService notificationService;
+
+    @Autowired
+    SendMailUtils sendMailUtils;
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String bookingIdStr = context.getJobDetail().getJobDataMap().getString("bookingId");
@@ -43,7 +48,14 @@ public class CompleteBookingJob implements Job {
         String message = "The booking with ID " + bookingId + " has been completed.";
 
         try {
-            notificationService.createNotification("Booking Completed", message, booking.getMentor(), true);
+            notificationService.createNotification("Booking Completed", message, booking.getMentor(), false);
+            EmailDetail emailDetail = new EmailDetail();
+            emailDetail.setSubject("Yêu đánh dấu đã hoàn thành cuộc họp");
+            emailDetail.setFullName(booking.getMentor().getFullName());
+            emailDetail.setRecipient(booking.getMentor().getEmail());
+            emailDetail.setButtonValue("Đánh dấu hoàn thành");
+            emailDetail.setLink("http://localhost:5173/mentor/booking-history?bookingId="+booking.getId());
+            sendMailUtils.threadSendMailTemplate(emailDetail);
         } catch (Exception e) {
             System.out.println("Error while creating notification: " + e.toString());
         }
