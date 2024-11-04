@@ -33,4 +33,6 @@ public interface IBookingService {
     Booking confirmRescheduleBooking(UUID bookingId, UUID newTimeFrameId, boolean isConfirmed);
 
     BookingResponse updateFinishStatusBooking(UUID bookingId);
+
+    BookingResponse getBookingDetail(UUID id);
 }

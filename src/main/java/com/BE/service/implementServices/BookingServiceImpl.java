@@ -541,4 +541,11 @@ public class BookingServiceImpl implements IBookingService {
         return bookingMapper.toBookingResponse(bookingRepository.save(booking));
     }
 
+    @Override
+    public BookingResponse getBookingDetail(UUID id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Booking not found"));
+        return bookingMapper.toBookingResponse(booking);
+    }
+
 }

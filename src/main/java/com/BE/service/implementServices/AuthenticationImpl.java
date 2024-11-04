@@ -4,6 +4,7 @@ package com.BE.service.implementServices;
 import com.BE.enums.RoleEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.UserMapper;
 import com.BE.model.EmailDetail;
 import com.BE.model.entity.UserTeam;
@@ -12,6 +13,7 @@ import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.model.entity.User;
 import com.BE.repository.UserRepository;
+import com.BE.repository.UserTeamRepository;
 import com.BE.service.EmailService;
 import com.BE.service.JWTService;
 import com.BE.service.RefreshTokenService;
@@ -59,6 +61,9 @@ public class AuthenticationImpl implements AuthenticationService {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+    @Autowired
+    UserTeamRepository userTeamRepository;
+
     @Override
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
@@ -99,6 +104,7 @@ public class AuthenticationImpl implements AuthenticationService {
             FirebaseToken decodeToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
             String email = decodeToken.getEmail();
             User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email Not Found"));
+//            Optional<UserTeam> userTeam = userTeamRepository.findByUserId(user.getId());
 //            if(user == null) {
 //                user = new User();
 //                user.setFullName(decodeToken.getName());
@@ -110,7 +116,8 @@ public class AuthenticationImpl implements AuthenticationService {
 
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
             Optional<UserTeam> userTeam = user.getUserTeams().stream().findFirst();
-            userTeam.ifPresent(team -> authenticationResponse.setTeamCode(team.getTeam().getCode()));
+            if(userTeam.isPresent()) authenticationResponse.setTeamCode(userTeam.get().getTeam().getCode());
+//            userTeam.ifPresent(team -> authenticationResponse.setTeamCode(team.getTeam().getCode()));
             authenticationResponse.setToken(jwtService.generateToken(user,UUID.randomUUID().toString(),false));
             return authenticationResponse;
         } catch (FirebaseAuthException e)

@@ -46,6 +46,11 @@ public class BookingController {
         return  responseHandler.response(200,"Get Booking Successfully", iBookingService.getBooking(type, status));
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity getBookingDetail(@PathVariable UUID id){
+        return  responseHandler.response(200,"Get Booking Successfully", iBookingService.getBookingDetail(id));
+    }
+
     @PatchMapping
     public ResponseEntity updateStatus(@Valid @RequestBody BookingStatusRequest statusRequest){
         return  responseHandler.response(200,"Change Status Booking Successfully", iBookingService.updateStatus(statusRequest));
