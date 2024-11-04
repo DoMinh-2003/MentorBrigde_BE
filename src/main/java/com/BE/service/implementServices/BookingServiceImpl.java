@@ -304,6 +304,33 @@ public class BookingServiceImpl implements IBookingService {
                 BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.REJECTED);
                 bookingHistoryRepository.save(bookingHistory);
             }else if(statusRequest.getStatus().equals(BookingStatusEnum.ACCEPTED)){
+                if(booking.getType().equals(BookingTypeEnum.INDIVIDUAL)){
+                    RoomRequest roomRequest = new RoomRequest();
+                    List<UUID> members = new ArrayList<>();
+                    members.add(booking.getMentor().getId());
+                    members.add(booking.getStudent().getId());
+                    roomRequest.setMembers(members);
+                    iChatService.createNewRoom(roomRequest);
+                }else{
+                    Optional<Topic> topic = booking.getTeam().getTopics().stream().filter((t)-> t.getStatus().equals(TopicEnum.ACTIVE)).findFirst();
+                    RoomRequest roomRequest = new RoomRequest();
+                    if (topic.isPresent()) {
+                        roomRequest.setName(booking.getTeam().getCode() + " - " + topic.get().getName());
+                    } else {
+                        // Xử lý trường hợp không có topic nào ACTIVE
+                        roomRequest.setName(booking.getTeam().getCode() + " - No Active Topic");
+                    }
+                    List<UUID> members =
+                            booking.getTeam().getUserTeams().stream()
+                                    .map(userTeam -> userTeam.getUser().getId()) // Giả sử User có phương thức getId() trả về UUID
+                                    .collect(Collectors.toList());
+
+                    User leader = booking.getTeam().getUserTeams().stream().filter(userTeam -> userTeam.getRole().equals(TeamRoleEnum.LEADER)).findFirst().get().getUser();
+                    members.add(booking.getMentor().getId());
+                    roomRequest.setMembers(members);
+                    roomRequest.setLeaderId(leader.getId());
+                    iChatService.createNewRoom(roomRequest);
+                }
                 BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.ACCEPTED);
                 bookingHistoryRepository.save(bookingHistory);
             }
@@ -401,31 +428,9 @@ public class BookingServiceImpl implements IBookingService {
             booking.setTeam(team);
             team.setPoints(team.getPoints() - config.getPointsDeducted());
             teamRepository.save(team);
-            Optional<Topic> topic = team.getTopics().stream().filter((t)-> t.getStatus().equals(TopicEnum.ACTIVE)).findFirst();
-            RoomRequest roomRequest = new RoomRequest();
-            if (topic.isPresent()) {
-                roomRequest.setName(team.getCode() + " - " + topic.get().getName());
-            } else {
-                // Xử lý trường hợp không có topic nào ACTIVE
-                roomRequest.setName(team.getCode() + " - No Active Topic");
-            }
-            List<UUID> members =
-                    team.getUserTeams().stream()
-                            .map(userTeam -> userTeam.getUser().getId()) // Giả sử User có phương thức getId() trả về UUID
-                            .collect(Collectors.toList());
 
-            User leader = team.getUserTeams().stream().filter(userTeam -> userTeam.getRole().equals(TeamRoleEnum.LEADER)).findFirst().get().getUser();
-            members.add(mentor.getId());
-            roomRequest.setMembers(members);
-            roomRequest.setLeaderId(leader.getId());
-            iChatService.createNewRoom(roomRequest);
         } else {
-            RoomRequest roomRequest = new RoomRequest();
-            List<UUID> members = new ArrayList<>();
-            members.add(mentor.getId());
-            members.add(currentUser.getId());
-            roomRequest.setMembers(members);
-            iChatService.createNewRoom(roomRequest);
+
             booking.setStudent(currentUser);
             currentUser.setPoints(currentUser.getPoints() - config.getPointsDeducted());
             userRepository.save(currentUser);
@@ -571,13 +576,15 @@ public class BookingServiceImpl implements IBookingService {
 
     private void sendRescheduleNotification(Booking booking, TimeFrame newTimeFrame) {
         List<User> recipients = new ArrayList<>();
-
-        if (booking.getType() == BookingTypeEnum.TEAM && booking.getTeam() != null) {
+        String message = "";
+        if (booking.getType().equals(BookingTypeEnum.TEAM) && booking.getTeam() != null) {
             recipients.addAll(booking.getTeam().getUserTeams().stream()
                     .map(UserTeam::getUser)
                     .collect(Collectors.toList()));
+            message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
         } else if (booking.getStudent() != null) {
             recipients.add(booking.getStudent());
+            message = "Đã dời lịch Booking của bạn";
         }
 
         for (User recipient : recipients) {
@@ -589,7 +596,6 @@ public class BookingServiceImpl implements IBookingService {
             emailDetail.setLink("http://localhost:5173/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
             sendMailUtils.threadSendMailTemplate(emailDetail);
             String title = "Dời lịch Booking";
-            String message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
             notificationService.createNotification(title, message, recipient,false);
         }
     }
