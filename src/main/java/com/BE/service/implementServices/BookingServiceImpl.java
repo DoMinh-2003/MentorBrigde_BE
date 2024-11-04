@@ -522,7 +522,7 @@ public class BookingServiceImpl implements IBookingService {
             emailDetail.setFullName(recipient.getFullName());
             emailDetail.setRecipient(recipient.getEmail());
             emailDetail.setButtonValue("Xem lịch booking mới");
-            emailDetail.setLink("http://localhost5173/booking/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
+            emailDetail.setLink("http://localhost5173/reschedule?bookingId="+booking.getId()+"&newTimeFrameId="+newTimeFrame.getId()+"&token="+jwtService.generateToken(recipient));
             sendMailUtils.threadSendMailTemplate(emailDetail);
             String title = "Dời lịch Booking";
             String message = "Đã dời lịch Booking của nhóm " + booking.getTeam().getCode();
