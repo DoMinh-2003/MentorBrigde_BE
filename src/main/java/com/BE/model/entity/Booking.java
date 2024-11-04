@@ -60,4 +60,8 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking")
     Set<Feedback> feedbacks = new HashSet<>();
+
+    @OneToOne
+    @JoinColumn(name = "room_id")
+    Room room;
 }
