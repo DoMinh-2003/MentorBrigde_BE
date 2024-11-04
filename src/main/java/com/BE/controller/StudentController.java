@@ -97,6 +97,13 @@ public class StudentController {
         Team team = teamService.getTeamByCode(teamCode);
         return responseHandler.response(200, "Get team success!", team);
     }
+
+    @GetMapping("/points")
+    public ResponseEntity getUserPoints() {
+        return responseHandler.response(200, "Get Points success!", studentService.getUserPoints());
+    }
+
+
 //    @PostMapping("/meet")
 //    public ResponseEntity<DataResponseDTO<Object>> getMeet() {
 //        return responseHandler.response(200, "Get meet success!", googleMeetService.createGoogleMeetLink());
