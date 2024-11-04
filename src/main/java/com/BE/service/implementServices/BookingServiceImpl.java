@@ -16,6 +16,7 @@ import com.BE.repository.BookingHistoryRepository;
 import com.BE.repository.BookingRepository;
 import com.BE.repository.SemesterRepository;
 import com.BE.repository.TimeFrameRepository;
+import com.BE.service.CompleteBookingJob;
 import com.BE.service.GoogleMeetService;
 import com.BE.service.JWTService;
 import com.BE.service.interfaceServices.*;
@@ -24,6 +25,7 @@ import com.BE.utils.PageUtil;
 
 import com.BE.utils.SendMailUtils;
 import jakarta.persistence.criteria.Predicate;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,9 @@ public class BookingServiceImpl implements IBookingService {
 
     @Autowired
     JWTService jwtService;
+
+    @Autowired
+    Scheduler scheduler;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               ITimeFrameService timeFrameService,
@@ -238,6 +243,23 @@ public class BookingServiceImpl implements IBookingService {
         User user = accountUtils.getCurrentUser();
         Booking booking = bookingRepository.findByIdAndStatus(statusRequest.getId(), BookingStatusEnum.REQUESTED).orElseThrow(() -> new NotFoundException("Booking này không tồn tại"));
 
+        JobDetail completeJobDetail = JobBuilder.newJob(CompleteBookingJob.class)
+                .withIdentity("completeBookingJob_" + booking.getId(), "bookings")
+                .usingJobData("bookingId", booking.getId().toString())
+                .usingJobData("mentorEmail", booking.getMentor().getEmail())
+                .build();
+
+        Trigger completeTrigger = TriggerBuilder.newTrigger()
+                .withIdentity("completeTrigger_" + booking.getId(), "bookings")
+                .startAt(Date.from(booking.getTimeFrame().getTimeFrameTo().atZone(ZoneId.systemDefault()).toInstant()))
+                .build();
+        try {
+            scheduler.scheduleJob(completeJobDetail, completeTrigger);
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Failed to schedule job for booking completion", e);
+        }
+
+
         if (statusRequest.getStatus().equals(BookingStatusEnum.ACCEPTED) || statusRequest.getStatus().equals(BookingStatusEnum.REJECTED)) {
             if (booking.getMentor().getId().equals(user.getId())) {
                 booking.setStatus(statusRequest.getStatus());
@@ -378,6 +400,8 @@ public class BookingServiceImpl implements IBookingService {
             iChatService.createNewRoom(roomRequest);
             booking.setStudent(currentUser);
         }
+
+
         BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.REQUESTED);
         booking.getBookingHistories().add(bookingHistory);
         booking = bookingRepository.save(booking);
@@ -386,6 +410,8 @@ public class BookingServiceImpl implements IBookingService {
         timeFrameRepository.save(timeFrame);
         return booking;
     }
+
+
 
     private BookingHistory logBookingHistory(Booking booking, BookingStatusEnum status) {
         BookingHistory bookingHistory = new BookingHistory();
@@ -450,7 +476,6 @@ public class BookingServiceImpl implements IBookingService {
         BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.PENDING_RESCHEDULE);
 
         bookingHistoryRepository.save(bookingHistory);
-
 
         // Gửi thông báo cho team hoặc student để xác nhận
         sendRescheduleNotification(booking, newTimeFrame);
