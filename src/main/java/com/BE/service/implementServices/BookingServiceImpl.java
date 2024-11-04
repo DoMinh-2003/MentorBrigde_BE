@@ -449,7 +449,6 @@ public class BookingServiceImpl implements IBookingService {
             String title = "Dời lịch Booking ";
             String message =  "Nhóm " + booking.getTeam().getCode() + " đã từ chối dời lịch Booking";
             notificationService.createNotification(title, message, booking.getMentor(),true);
-
             return booking;
         }
 
