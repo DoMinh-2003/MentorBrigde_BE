@@ -22,7 +22,9 @@ public class ConfigResponse {
 
     String minTimeSlotDuration;
 
-    int totalPoints;
+    int totalTeamPoints;
+
+    int totalStudentPoints;
 
     int pointsDeducted;
 }

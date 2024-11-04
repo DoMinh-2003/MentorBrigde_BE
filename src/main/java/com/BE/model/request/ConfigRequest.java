@@ -25,8 +25,12 @@ public class ConfigRequest {
     @Schema(example = "PT1H || PT30M", description = "Thời gian slot, định dạng ISO-8601")
     Duration minTimeSlotDuration;
 
+
     @Positive(message = "Minimum number must be greater than 0")
-    int totalPoints;
+    int totalTeamPoints;
+
+    @Positive(message = "Minimum number must be greater than 0")
+    int totalStudentPoints;
 
     @Positive(message = "Minimum number must be greater than 0")
     int pointsDeducted;

@@ -86,7 +86,9 @@ public class AdminServiceImpl implements IAdminService {
                         System.out.println("User already exists, skipping: " + user.getEmail());
                         continue;
                     }
-                    user.setPoints(config.getTotalPoints());
+                    if(user.getRole().equals(RoleEnum.STUDENT)){
+                        user.setPoints(config.getTotalStudentPoints());
+                    }
                     users.add(user);
                 } catch (Exception e) {
                     System.out.println("Error processing user: " + Arrays.toString(values));
