@@ -93,8 +93,9 @@ public class AuthenticationImpl implements AuthenticationService {
 
         User user = (User) authentication.getPrincipal();
         AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
-        authenticationResponse.setToken(jwtService.generateToken(user, UUID.randomUUID().toString(),false));
-
+        String refresh = UUID.randomUUID().toString();
+        authenticationResponse.setToken(jwtService.generateToken(user,refresh ,false));
+        authenticationResponse.setRefreshToken(refresh);
         return authenticationResponse;
     }
 
@@ -118,7 +119,9 @@ public class AuthenticationImpl implements AuthenticationService {
             Optional<UserTeam> userTeam = user.getUserTeams().stream().findFirst();
             if(userTeam.isPresent()) authenticationResponse.setTeamCode(userTeam.get().getTeam().getCode());
 //            userTeam.ifPresent(team -> authenticationResponse.setTeamCode(team.getTeam().getCode()));
-            authenticationResponse.setToken(jwtService.generateToken(user,UUID.randomUUID().toString(),false));
+            String refresh = UUID.randomUUID().toString();
+            authenticationResponse.setToken(jwtService.generateToken(user, refresh ,false));
+            authenticationResponse.setRefreshToken(refresh);
             return authenticationResponse;
         } catch (FirebaseAuthException e)
         {
@@ -163,11 +166,11 @@ public class AuthenticationImpl implements AuthenticationService {
     @Override
     public AuthenResponse refresh(RefreshRequest refreshRequest) {
         AuthenResponse authenResponse = new AuthenResponse();
-        String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
-        if (refreshTokenService.validateRefreshToken(refresh)) {
-            System.out.println(refreshTokenService.getIdFromRefreshToken(refresh));
-            User user = userRepository.findById(refreshTokenService.getIdFromRefreshToken(refresh)).orElseThrow(() -> new BadRequestException("User Not Found"));
-            authenResponse.setToken(jwtService.generateToken(user,refresh,true));
+//        String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
+        if (refreshTokenService.validateRefreshToken(refreshRequest.getRefreshToken())) {
+            System.out.println(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()));
+            User user = userRepository.findById(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken())).orElseThrow(() -> new BadRequestException("User Not Found"));
+            authenResponse.setToken(jwtService.generateToken(user, refreshRequest.getRefreshToken(),true));
         }else{
             throw new InvalidRefreshTokenException("Invalid refresh token");
         }
@@ -175,7 +178,7 @@ public class AuthenticationImpl implements AuthenticationService {
     }
     @Override
     public void logout(RefreshRequest refreshRequest) {
-        String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
+        String refresh = refreshRequest.getRefreshToken();
         refreshTokenService.deleteRefreshToken(refresh);
     }
 }

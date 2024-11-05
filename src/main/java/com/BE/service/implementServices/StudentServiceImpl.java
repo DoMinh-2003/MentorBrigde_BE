@@ -5,7 +5,9 @@ import com.BE.model.entity.User;
 import com.BE.model.response.UserResponse;
 import com.BE.repository.UserRepository;
 import com.BE.service.interfaceServices.IStudentService;
+import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,9 @@ public class StudentServiceImpl implements IStudentService {
         this.userMapper = userMapper;
         this.pageUtil = pageUtil;
     }
+
+    @Autowired
+    AccountUtils accountUtils;
 
     @Override
     public Page<UserResponse> searchStudents(String searchTerm, int offset, int size,
@@ -52,5 +57,10 @@ public class StudentServiceImpl implements IStudentService {
     @Override
     public User getStudentByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public int getUserPoints() {
+        return accountUtils.getCurrentUser().getPoints();
     }
 }
