@@ -405,9 +405,9 @@ public class BookingServiceImpl implements IBookingService {
         UserTeam userTeam = teamService.getUserTeamByUserIdAndValidate(currentUser.getId(), teamCode,
                 "The selected user is not part of the team.");
 
-        if (!userTeam.getRole().equals(TeamRoleEnum.LEADER)) {
-            throw new IllegalArgumentException("Only a team leader can book a time frame.");
-        }
+//        if (!userTeam.getRole().equals(TeamRoleEnum.LEADER)) {
+//            throw new IllegalArgumentException("Only a team leader can book a time frame.");
+//        }
 
         return userTeam.getTeam();
     }
