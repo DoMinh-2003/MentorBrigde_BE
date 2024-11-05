@@ -334,6 +334,9 @@ public class BookingServiceImpl implements IBookingService {
                     roomRequest.setLeaderId(leader.getId());
                     iChatService.createNewRoom(roomRequest);
                 }
+                TimeFrame timeFrame = booking.getTimeFrame();
+                timeFrame.setTimeFrameStatus(TimeFrameStatus.BOOKED);
+                timeFrameRepository.save(timeFrame);
                 BookingHistory bookingHistory = logBookingHistory(booking, BookingStatusEnum.ACCEPTED);
                 bookingHistoryRepository.save(bookingHistory);
             }
@@ -444,8 +447,7 @@ public class BookingServiceImpl implements IBookingService {
         booking.getBookingHistories().add(bookingHistory);
         booking = bookingRepository.save(booking);
         bookingHistoryRepository.save(bookingHistory);
-        timeFrame.setTimeFrameStatus(TimeFrameStatus.BOOKED);
-        timeFrameRepository.save(timeFrame);
+
         return booking;
     }
 
