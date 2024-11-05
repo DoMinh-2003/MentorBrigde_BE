@@ -21,6 +21,8 @@ import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 
 import com.BE.utils.SendMailUtils;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +202,14 @@ public class BookingServiceImpl implements IBookingService {
             if (user.getRole().equals(RoleEnum.MENTOR)) {
                 predicates.add(cb.equal(root.get("mentor"), user));
             } else {
-                predicates.add(cb.equal(root.get("student"), user));
+                Predicate studentDirect = cb.equal(root.get("student"), user);
+
+                Join<Booking, Team> teamJoin = root.join("team", JoinType.LEFT);
+                Join<Team, UserTeam> userTeamJoin = teamJoin.join("userTeams", JoinType.LEFT);
+                Predicate studentInTeam = cb.equal(userTeamJoin.get("user"), user);
+
+                // Use OR to match either direct booking or team membership
+                predicates.add(cb.or(studentDirect, studentInTeam));
             }
 
             // Add status condition
