@@ -234,16 +234,16 @@ public class BookingServiceImpl implements IBookingService {
 
         // Sắp xếp theo vai trò người dùng
         if (user.getRole().equals(RoleEnum.MENTOR)) {
-        if(status != null){
+            if(status != null){
             bookings.sort(Comparator.comparing((Booking booking) ->
                             booking.getTeam() != null &&
                                     booking.getTeam().getUserTeams().stream()
                                             .anyMatch(userTeam -> userTeam.getUser().equals(user) && userTeam.getRole() == TeamRoleEnum.MENTOR) ? 0 : 1)
                     .thenComparing(Booking::getCreatedAt));
-        }else{
-            bookings.sort(Comparator.comparing(Booking::getCreatedAt).reversed());
-        }
-        } else {
+            }else if(status == null){
+                bookings.sort(Comparator.comparing(Booking::getCreatedAt).reversed());
+            }
+        } else if(user.getRole().equals(RoleEnum.STUDENT)) {
             bookings.sort(Comparator.comparing(Booking::getCreatedAt).reversed());
         }
 
