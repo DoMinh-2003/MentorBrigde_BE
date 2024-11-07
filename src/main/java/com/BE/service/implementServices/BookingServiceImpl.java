@@ -452,24 +452,32 @@ public class BookingServiceImpl implements IBookingService {
             executorService.shutdown();
         }
     }
-    private void refundPointsForBooking(Booking booking, Config config) {
+    private void refundPointsForBooking(Booking booking1, Config config) {
+
+       Optional<Booking> booking2 = bookingRepository.findByIdAndStatus(booking1.getId(),BookingStatusEnum.REQUESTED);
+        Booking booking = booking2.get();
+
         // Hoàn điểm cho team nếu booking thuộc loại TEAM
-        if (booking.getTeam() != null) {
-            Team team = booking.getTeam();
-            int previousPoints = team.getPoints();
-            team.setPoints(team.getPoints() + config.getPointsDeducted());
-            iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, team.getPoints(), null, team);
-            teamRepository.save(team);
-        }
-        // Hoàn điểm cho student nếu booking thuộc loại STUDENT
-        else if (booking.getStudent() != null) {
-            User student = booking.getStudent();
-            int previousPoints = student.getPoints();
-            student.setPoints(student.getPoints() + config.getPointsDeducted());
-            iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, student.getPoints(), student, null);
-            userRepository.save(student);
-        }
-        bookingRepository.save(booking);
+       if(BookingStatusEnum.REQUESTED.equals(booking.getStatus())){
+           if (booking.getTeam() != null) {
+               Team team = booking.getTeam();
+               int previousPoints = team.getPoints();
+               team.setPoints(team.getPoints() + config.getPointsDeducted());
+               iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, team.getPoints(), null, team);
+               teamRepository.save(team);
+           }
+           // Hoàn điểm cho student nếu booking thuộc loại STUDENT
+           else if (booking.getStudent() != null) {
+               User student = booking.getStudent();
+               int previousPoints = student.getPoints();
+               student.setPoints(student.getPoints() + config.getPointsDeducted());
+               iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, student.getPoints(), student, null);
+               userRepository.save(student);
+           }
+           booking.setStatus(BookingStatusEnum.REJECTED);
+           bookingRepository.save(booking);
+       }
+
     }
 
     private Booking createNewBooking(Config config,TimeFrame timeFrame, User currentUser, User mentor, Team team, BookingTypeEnum type) {
@@ -501,7 +509,7 @@ public class BookingServiceImpl implements IBookingService {
             throw new BadRequestException("Cannot create meet link");
         }
 
-        scheduleRefundPointsForBooking(booking, timeFrame, config);
+
         if (type.equals(BookingTypeEnum.TEAM)) {
             booking.setTeam(team);
             int previousPoints = team.getPoints();
@@ -523,6 +531,8 @@ public class BookingServiceImpl implements IBookingService {
         booking.getBookingHistories().add(bookingHistory);
         booking = bookingRepository.save(booking);
         bookingHistoryRepository.save(bookingHistory);
+
+        scheduleRefundPointsForBooking(booking, timeFrame, config);
 
         return booking;
     }
