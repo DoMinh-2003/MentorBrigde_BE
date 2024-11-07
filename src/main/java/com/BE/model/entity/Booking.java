@@ -64,4 +64,8 @@ public class Booking {
     @OneToOne
     @JoinColumn(name = "room_id")
     Room room;
+
+    @OneToMany(mappedBy = "booking",cascade = CascadeType.ALL)
+    @JsonIgnore
+    Set<PointsHistory> pointsHistories = new HashSet<>();
 }
