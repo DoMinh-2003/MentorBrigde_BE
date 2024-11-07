@@ -123,8 +123,11 @@ public class ChatService implements IChatService {
     @Override
     public void setTyping(int roomID, String name) {
         Room roomDTO = roomRepository.findRoomByRoomID(roomID);
+        User user = accountUtils.getCurrentUser();;
         for (User account : roomDTO.getUsers()) {
-            messagingTemplate.convertAndSend("/topic/chat/" + account.getId(), name + " .gitis typing ... ") ;
+            if(account.getId() != user.getId()){
+                messagingTemplate.convertAndSend("/topic/chat/" + account.getId(), name+" ") ;
+            }
         }
     }
 
