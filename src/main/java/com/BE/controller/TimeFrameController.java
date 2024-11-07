@@ -47,6 +47,11 @@ public class TimeFrameController {
         return  responseHandler.response(200,"Get Weekly TimeFrame  Successfully", iTimeFrameService.getWeeklyTimeFrameForMentor(semesterCode));
     }
 
+    @GetMapping("/timeFrame/{id}")
+    public ResponseEntity gettimeFrame(@PathVariable UUID id) {
+        return  responseHandler.response(200,"Get Schedule TimeFrame Successfully", iTimeFrameService.getById(id));
+    }
+
 
 
 
