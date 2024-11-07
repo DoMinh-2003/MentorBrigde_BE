@@ -11,6 +11,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class PointsResponse {
+
+    int totalTeamPoints;
+    int totalStudentPoints;
+
     int studentPoints;
     int teamPoints;
 }

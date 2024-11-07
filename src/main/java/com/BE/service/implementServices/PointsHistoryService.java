@@ -3,10 +3,12 @@ package com.BE.service.implementServices;
 import com.BE.enums.BookingTypeEnum;
 import com.BE.enums.PointChangeType;
 import com.BE.enums.RoleEnum;
+import com.BE.enums.TeamRoleEnum;
 import com.BE.mapper.PointsHistoryMapper;
 import com.BE.model.entity.*;
 import com.BE.model.response.PointsHistoryResponse;
 import com.BE.model.response.PointsResponse;
+import com.BE.repository.ConfigRepository;
 import com.BE.repository.PointsHistoryRepository;
 import com.BE.repository.UserTeamRepository;
 import com.BE.service.interfaceServices.IPointsHistoryService;
@@ -44,6 +46,9 @@ public class PointsHistoryService implements IPointsHistoryService {
     @Autowired
     PointsHistoryMapper pointsHistoryMapper;
 
+    @Autowired
+    ConfigRepository configRepository;
+
 
     @Override
     public void createPointsHistory(Booking booking, BookingTypeEnum bookingTypeEnum, PointChangeType pointChangeType, int changePoints, int previousPoints, int newPoints, User student, Team team) {
@@ -70,6 +75,8 @@ public class PointsHistoryService implements IPointsHistoryService {
     @Override
     public PointsResponse getUserPoints() {
 
+        Config config =  configRepository.findFirstBy();
+
         int teamPoints = 0;
 
         User user =  accountUtils.getCurrentUser();
@@ -77,13 +84,16 @@ public class PointsHistoryService implements IPointsHistoryService {
         Optional<UserTeam> userTeam = userTeamRepository.findByUserId(user.getId());
 
         if(userTeam.isPresent()){
-            if(RoleEnum.STUDENT.equals(userTeam.get().getRole())){
+            if(!TeamRoleEnum.MENTOR.equals(userTeam.get().getRole())){
                 teamPoints = userTeam.get().getTeam().getPoints();
             }
         }
         return PointsResponse.builder()
                 .studentPoints(user.getPoints())
-                .teamPoints(teamPoints).build();
+                .teamPoints(teamPoints)
+                .totalStudentPoints(config.getTotalStudentPoints())
+                .totalTeamPoints(config.getTotalTeamPoints())
+                .build();
     }
 
     private Specification<PointsHistory> filterByTypeAndChangeTypeAndUser(
