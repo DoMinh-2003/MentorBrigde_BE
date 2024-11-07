@@ -41,7 +41,6 @@ public class Topic {
     TopicEnum status;
 
     @ManyToOne
-    @JsonIgnore
     @JoinColumn(name = "creator_id")
     User creator;
 
