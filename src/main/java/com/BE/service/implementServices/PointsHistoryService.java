@@ -4,10 +4,7 @@ import com.BE.enums.BookingTypeEnum;
 import com.BE.enums.PointChangeType;
 import com.BE.enums.RoleEnum;
 import com.BE.mapper.PointsHistoryMapper;
-import com.BE.model.entity.PointsHistory;
-import com.BE.model.entity.Team;
-import com.BE.model.entity.User;
-import com.BE.model.entity.UserTeam;
+import com.BE.model.entity.*;
 import com.BE.model.response.PointsHistoryResponse;
 import com.BE.model.response.PointsResponse;
 import com.BE.repository.PointsHistoryRepository;
@@ -49,9 +46,10 @@ public class PointsHistoryService implements IPointsHistoryService {
 
 
     @Override
-    public void createPointsHistory(BookingTypeEnum bookingTypeEnum, PointChangeType pointChangeType, int changePoints, int previousPoints, int newPoints, User student, Team team) {
+    public void createPointsHistory(Booking booking, BookingTypeEnum bookingTypeEnum, PointChangeType pointChangeType, int changePoints, int previousPoints, int newPoints, User student, Team team) {
 
         PointsHistory pointsHistory = new PointsHistory();
+        pointsHistory.setBooking(booking);
         pointsHistory.setBookingTypeEnum(bookingTypeEnum);
         pointsHistory.setPointChangeType(pointChangeType);
         pointsHistory.setChangePoints(changePoints);

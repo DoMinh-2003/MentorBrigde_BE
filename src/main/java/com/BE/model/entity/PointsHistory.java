@@ -42,5 +42,10 @@ public class PointsHistory {
     @JoinColumn(name = "team_id")
     Team team;
 
+    @ManyToOne
+    @JoinColumn(name = "booking_id")
+    Booking booking;
+
+
     LocalDateTime changeTime;
 }
