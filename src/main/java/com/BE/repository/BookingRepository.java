@@ -21,6 +21,9 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
 
     List<Booking> findByTimeFrame(TimeFrame timeFrame);
 
+    Optional<Booking> findByTimeFrameAndStudentAndStatus(TimeFrame timeFrame, User student, BookingStatusEnum status);
+    Optional<Booking> findByTimeFrameAndTeamAndStatus(TimeFrame timeFrame, Team team, BookingStatusEnum status);
+
     @Query("SELECT b FROM Booking b WHERE b.mentor = :mentor AND b.status IN :statuses AND b.semester = :semester AND MONTH(b.timeFrame.timeFrameFrom) = :month")
     List<Booking> findByMentorAndStatusesAndSemesterAndTimeFrameMonth(@Param("mentor") User mentor,
                                                                       @Param("statuses") List<BookingStatusEnum> statuses,
