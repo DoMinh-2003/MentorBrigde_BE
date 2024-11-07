@@ -473,7 +473,20 @@ public class BookingServiceImpl implements IBookingService {
     }
 
     private Booking createNewBooking(Config config,TimeFrame timeFrame, User currentUser, User mentor, Team team, BookingTypeEnum type) {
-
+        // Check if the student has already booked this timeframe with status REQUESTED
+        if (type.equals(BookingTypeEnum.INDIVIDUAL)) {
+            bookingRepository.findByTimeFrameAndStudentAndStatus(timeFrame, currentUser, BookingStatusEnum.REQUESTED)
+                    .ifPresent(existingBooking -> {
+                        throw new BadRequestException("You have already requested a booking for this timeframe.");
+                    });
+        }
+        // Check if the team has already booked this timeframe with status REQUESTED
+        else if (type.equals(BookingTypeEnum.TEAM)) {
+            bookingRepository.findByTimeFrameAndTeamAndStatus(timeFrame, team, BookingStatusEnum.REQUESTED)
+                    .ifPresent(existingBooking -> {
+                        throw new BadRequestException("This team has already requested a booking for this timeframe.");
+                    });
+        }
         Booking booking = new Booking();
         booking.setCreatedAt(LocalDateTime.now());
         booking.setMentor(mentor);
