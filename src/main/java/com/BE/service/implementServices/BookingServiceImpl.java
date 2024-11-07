@@ -33,6 +33,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,6 +75,9 @@ public class BookingServiceImpl implements IBookingService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    IPointsHistoryService iPointsHistoryService;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               ITimeFrameService timeFrameService,
@@ -298,11 +304,15 @@ public class BookingServiceImpl implements IBookingService {
                     message = "Mentor đã từ chối booking của bạn";
                     if(booking.getType().equals(BookingTypeEnum.TEAM)){
                         Team team = booking.getTeam();
+                        int previousPoints = team.getPoints();
                         team.setPoints(team.getPoints() + config.getPointsDeducted());
+                        iPointsHistoryService.createPointsHistory(booking, booking.getType(),PointChangeType.REFUND,config.getPointsDeducted(),previousPoints,team.getPoints(),null,team);
                         teamRepository.save(team);
                     }else{
                         User student = booking.getStudent();
+                        int previousPoints = student.getPoints();
                         student.setPoints(student.getPoints() + config.getPointsDeducted());
+                        iPointsHistoryService.createPointsHistory(booking, booking.getType(),PointChangeType.REFUND,config.getPointsDeducted(),previousPoints,student.getPoints(),student,null);
                         userRepository.save(student);
                     }
                 }
@@ -424,6 +434,43 @@ public class BookingServiceImpl implements IBookingService {
         return userTeam.getTeam();
     }
 
+    private void scheduleRefundPointsForBooking(Booking booking, TimeFrame timeFrame, Config config) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Nếu thời gian của timeFrame đã hết, tiến hành hoàn điểm ngay lập tức
+        if (timeFrame.getTimeFrameTo().isBefore(now)) {
+            refundPointsForBooking(booking, config);
+        } else {
+            // Nếu timeFrame chưa hết hạn, lên lịch hoàn điểm khi timeFrame hết hạn
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            long delay = timeFrame.getTimeFrameTo().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+            executorService.schedule(() -> {
+                refundPointsForBooking(booking, config);
+            }, delay, TimeUnit.MILLISECONDS);
+
+            executorService.shutdown();
+        }
+    }
+    private void refundPointsForBooking(Booking booking, Config config) {
+        // Hoàn điểm cho team nếu booking thuộc loại TEAM
+        if (booking.getTeam() != null) {
+            Team team = booking.getTeam();
+            int previousPoints = team.getPoints();
+            team.setPoints(team.getPoints() + config.getPointsDeducted());
+            iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, team.getPoints(), null, team);
+            teamRepository.save(team);
+        }
+        // Hoàn điểm cho student nếu booking thuộc loại STUDENT
+        else if (booking.getStudent() != null) {
+            User student = booking.getStudent();
+            int previousPoints = student.getPoints();
+            student.setPoints(student.getPoints() + config.getPointsDeducted());
+            iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, student.getPoints(), student, null);
+            userRepository.save(student);
+        }
+    }
+
     private Booking createNewBooking(Config config,TimeFrame timeFrame, User currentUser, User mentor, Team team, BookingTypeEnum type) {
 
         Booking booking = new Booking();
@@ -439,15 +486,21 @@ public class BookingServiceImpl implements IBookingService {
         } catch (Exception e) {
             throw new BadRequestException("Cannot create meet link");
         }
+
+        scheduleRefundPointsForBooking(booking, timeFrame, config);
         if (type.equals(BookingTypeEnum.TEAM)) {
             booking.setTeam(team);
+            int previousPoints = team.getPoints();
             team.setPoints(team.getPoints() - config.getPointsDeducted());
+            iPointsHistoryService.createPointsHistory(booking, booking.getType(),PointChangeType.DEDUCTION,config.getPointsDeducted(),previousPoints,team.getPoints(),null,team);
+
             teamRepository.save(team);
 
         } else {
-
             booking.setStudent(currentUser);
+            int previousPoints = currentUser.getPoints();
             currentUser.setPoints(currentUser.getPoints() - config.getPointsDeducted());
+            iPointsHistoryService.createPointsHistory(booking, booking.getType(),PointChangeType.DEDUCTION,config.getPointsDeducted(),previousPoints,currentUser.getPoints(),currentUser,null);
             userRepository.save(currentUser);
         }
 
@@ -542,11 +595,15 @@ public class BookingServiceImpl implements IBookingService {
         if (!isConfirmed) {
             if(booking.getType().equals(BookingTypeEnum.TEAM)){
                 Team team = booking.getTeam();
+                int previousPoints = team.getPoints();
                 team.setPoints(team.getPoints() + config.getPointsDeducted());
+                iPointsHistoryService.createPointsHistory(booking,booking.getType(),PointChangeType.REFUND,config.getPointsDeducted(),previousPoints,team.getPoints(),null,team);
                 teamRepository.save(team);
                 message =  "Nhóm " + booking.getTeam().getCode() + " đã từ chối dời lịch Booking";
             }else{
+                int previousPoints = student.getPoints();
                 student.setPoints(student.getPoints() + config.getPointsDeducted());
+                iPointsHistoryService.createPointsHistory(booking,booking.getType(),PointChangeType.REFUND,config.getPointsDeducted(),previousPoints,student.getPoints(),student,null);
                 userRepository.save(student);
                 message = student.getFullName() +  " đã từ chối dời lịch Booking";
             }

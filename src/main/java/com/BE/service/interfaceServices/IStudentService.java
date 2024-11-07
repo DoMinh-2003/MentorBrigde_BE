@@ -1,6 +1,7 @@
 package com.BE.service.interfaceServices;
 
 import com.BE.model.entity.User;
+import com.BE.model.response.PointsResponse;
 import com.BE.model.response.UserResponse;
 import org.springframework.data.domain.Page;
 
@@ -11,5 +12,5 @@ public interface IStudentService {
     void saveStudent(User user);
     User getStudentByEmail(String email);
 
-    int getUserPoints();
+
 }

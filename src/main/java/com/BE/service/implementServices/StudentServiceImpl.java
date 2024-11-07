@@ -1,16 +1,24 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.RoleEnum;
 import com.BE.mapper.UserMapper;
+import com.BE.model.entity.Team;
 import com.BE.model.entity.User;
+import com.BE.model.entity.UserTeam;
+import com.BE.model.response.PointsResponse;
 import com.BE.model.response.UserResponse;
 import com.BE.repository.UserRepository;
+import com.BE.repository.UserTeamRepository;
 import com.BE.service.interfaceServices.IStudentService;
+import com.BE.service.interfaceServices.ITeamService;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class StudentServiceImpl implements IStudentService {
@@ -28,6 +36,8 @@ public class StudentServiceImpl implements IStudentService {
 
     @Autowired
     AccountUtils accountUtils;
+
+
 
     @Override
     public Page<UserResponse> searchStudents(String searchTerm, int offset, int size,
@@ -59,8 +69,5 @@ public class StudentServiceImpl implements IStudentService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    @Override
-    public int getUserPoints() {
-        return accountUtils.getCurrentUser().getPoints();
-    }
+
 }
