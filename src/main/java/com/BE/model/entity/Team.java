@@ -45,4 +45,8 @@ public class Team {
     @JsonIgnore
     Set<Booking> bookings = new HashSet<>();
 
+    @OneToMany(mappedBy = "team",cascade = CascadeType.ALL)
+    @JsonIgnore
+    Set<PointsHistory> pointsHistories = new HashSet<>();
+
 }

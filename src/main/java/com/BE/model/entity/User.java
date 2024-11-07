@@ -112,6 +112,11 @@
         @JsonIgnore
         Set<Feedback> feedbacks = new HashSet<>();
 
+
+        @OneToMany(mappedBy = "student",cascade = CascadeType.ALL)
+        @JsonIgnore
+        Set<PointsHistory> pointsHistories = new HashSet<>();
+
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
