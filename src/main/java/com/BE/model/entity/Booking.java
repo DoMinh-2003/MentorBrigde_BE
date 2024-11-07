@@ -65,7 +65,7 @@ public class Booking {
     @JoinColumn(name = "room_id")
     Room room;
 
-    @OneToMany(mappedBy = "booking",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "booking",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnore
     Set<PointsHistory> pointsHistories = new HashSet<>();
 }
