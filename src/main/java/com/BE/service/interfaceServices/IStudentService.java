@@ -12,5 +12,5 @@ public interface IStudentService {
     void saveStudent(User user);
     User getStudentByEmail(String email);
 
-    PointsResponse getUserPoints();
+
 }
