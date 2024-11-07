@@ -51,9 +51,11 @@ public class Semester {
     Set<Team> teams;
 
     @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
+    @JsonIgnore
     Set<Topic> topics = new HashSet<>();
 
     @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
+    @JsonIgnore
     Set<TimeFrame> timeFrames = new HashSet<>();
 
     @OneToMany(mappedBy = "semester",cascade = CascadeType.ALL)
