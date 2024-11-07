@@ -7,7 +7,8 @@ import com.BE.model.entity.User;
 import com.BE.model.response.PointsHistoryResponse;
 import com.BE.model.response.PointsResponse;
 
-import java.time.LocalDateTime;
+import java.util.List;
+
 
 public interface IPointsHistoryService {
 
@@ -17,5 +18,5 @@ public interface IPointsHistoryService {
     PointsResponse getUserPoints();
 
 
-    PointsHistoryResponse getPointsHistory();
+    List<PointsHistoryResponse> getPointsHistory(BookingTypeEnum bookingTypeEnum, PointChangeType pointChangeType);
 }
