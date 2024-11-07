@@ -469,6 +469,7 @@ public class BookingServiceImpl implements IBookingService {
             iPointsHistoryService.createPointsHistory(booking,booking.getType(), PointChangeType.REFUND, config.getPointsDeducted(), previousPoints, student.getPoints(), student, null);
             userRepository.save(student);
         }
+        bookingRepository.save(booking);
     }
 
     private Booking createNewBooking(Config config,TimeFrame timeFrame, User currentUser, User mentor, Team team, BookingTypeEnum type) {

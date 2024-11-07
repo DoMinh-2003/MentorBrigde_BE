@@ -58,8 +58,13 @@ public class PointsHistoryService implements IPointsHistoryService {
         if(student != null) pointsHistory.setStudent(student);
         if(team != null) pointsHistory.setTeam(team);
         pointsHistory.setChangeTime(dateNowUtils.dateNow());
+        booking.getPointsHistories().add(pointsHistory);
+//        try {
+//            pointsHistoryRepository.save(pointsHistory);
+//        }catch(Exception e){
+//            System.out.println(e.getMessage());
+//        }
 
-        pointsHistoryRepository.save(pointsHistory);
     }
 
     @Override
