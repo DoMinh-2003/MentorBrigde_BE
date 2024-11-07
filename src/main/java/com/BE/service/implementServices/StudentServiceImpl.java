@@ -37,8 +37,7 @@ public class StudentServiceImpl implements IStudentService {
     @Autowired
     AccountUtils accountUtils;
 
-    @Autowired
-    UserTeamRepository userTeamRepository;
+
 
     @Override
     public Page<UserResponse> searchStudents(String searchTerm, int offset, int size,
@@ -70,22 +69,5 @@ public class StudentServiceImpl implements IStudentService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    @Override
-    public PointsResponse getUserPoints() {
 
-      int teamPoints = 0;
-
-      User user =  accountUtils.getCurrentUser();
-
-      Optional<UserTeam> userTeam = userTeamRepository.findByUserId(user.getId());
-
-      if(userTeam.isPresent()){
-          if(RoleEnum.STUDENT.equals(userTeam.get().getRole())){
-              teamPoints = userTeam.get().getTeam().getPoints();
-          }
-      }
-        return PointsResponse.builder()
-                .studentPoints(user.getPoints())
-                .teamPoints(teamPoints).build();
-    }
 }

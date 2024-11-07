@@ -98,10 +98,7 @@ public class StudentController {
         return responseHandler.response(200, "Get team success!", team);
     }
 
-    @GetMapping("/points")
-    public ResponseEntity getUserPoints() {
-        return responseHandler.response(200, "Get Points success!", studentService.getUserPoints());
-    }
+
 
 
 //    @PostMapping("/meet")

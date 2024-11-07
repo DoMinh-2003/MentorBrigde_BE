@@ -31,9 +31,9 @@ public class PointsHistoryResponse {
 
     int changePoints; // số điểm thay đổi trong sự kiện
 
-    int previousScore;  // điểm trước khi thay đổi
+    int previousPoints;  // điểm trước khi thay đổi
 
-    int newScore; // điểm sau khi thay đổi
+    int newPoints; // điểm sau khi thay đổi
 
 
     User student;

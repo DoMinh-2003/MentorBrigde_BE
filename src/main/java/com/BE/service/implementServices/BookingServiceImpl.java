@@ -73,6 +73,9 @@ public class BookingServiceImpl implements IBookingService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    IPointsHistoryService iPointsHistoryService;
+
     public BookingServiceImpl(BookingRepository bookingRepository,
                               ITimeFrameService timeFrameService,
                               AccountUtils accountUtils,
@@ -298,11 +301,15 @@ public class BookingServiceImpl implements IBookingService {
                     message = "Mentor đã từ chối booking của bạn";
                     if(booking.getType().equals(BookingTypeEnum.TEAM)){
                         Team team = booking.getTeam();
+                        int previousPoints = team.getPoints();
                         team.setPoints(team.getPoints() + config.getPointsDeducted());
+                        iPointsHistoryService.createPointsHistory(booking.getType(),PointChangeType.REFUND,config.getPointsDeducted(),previousPoints,team.getPoints(),null,team);
                         teamRepository.save(team);
                     }else{
                         User student = booking.getStudent();
+                        int previousPoints = student.getPoints();
                         student.setPoints(student.getPoints() + config.getPointsDeducted());
+                        iPointsHistoryService.createPointsHistory(booking.getType(),PointChangeType.REFUND,config.getPointsDeducted(),previousPoints,student.getPoints(),student,null);
                         userRepository.save(student);
                     }
                 }
@@ -441,13 +448,17 @@ public class BookingServiceImpl implements IBookingService {
         }
         if (type.equals(BookingTypeEnum.TEAM)) {
             booking.setTeam(team);
+            int previousPoints = team.getPoints();
             team.setPoints(team.getPoints() - config.getPointsDeducted());
+            iPointsHistoryService.createPointsHistory(booking.getType(),PointChangeType.DEDUCTION,config.getPointsDeducted(),previousPoints,team.getPoints(),null,team);
+
             teamRepository.save(team);
 
         } else {
-
             booking.setStudent(currentUser);
+            int previousPoints = currentUser.getPoints();
             currentUser.setPoints(currentUser.getPoints() - config.getPointsDeducted());
+            iPointsHistoryService.createPointsHistory(booking.getType(),PointChangeType.DEDUCTION,config.getPointsDeducted(),previousPoints,currentUser.getPoints(),currentUser,null);
             userRepository.save(currentUser);
         }
 
