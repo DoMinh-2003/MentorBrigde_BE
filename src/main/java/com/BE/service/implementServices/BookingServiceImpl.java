@@ -253,7 +253,7 @@ public class BookingServiceImpl implements IBookingService {
             bookings.sort(Comparator.comparing((Booking booking) ->
                             booking.getTeam() != null &&
                                     booking.getTeam().getUserTeams().stream()
-                                            .anyMatch(userTeam -> userTeam.getUser().equals(user) && userTeam.getRole() == TeamRoleEnum.MENTOR) ? 0 : 1)
+                                            .anyMatch(userTeam -> userTeam.getUser().equals(user) && userTeam.getRole().equals(TeamRoleEnum.MENTOR)) ? 0 : 1)
                     .thenComparing(Booking::getCreatedAt));
             }else if(status == null){
                 bookings.sort(Comparator.comparing(Booking::getCreatedAt).reversed());
