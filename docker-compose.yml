@@ -1,0 +1,21 @@
+  version: '3'
+  services:
+    mysql_container:
+      image: mysql:latest
+      container_name: mysql_db_container  # Tên của container MySQL
+      environment:
+        MYSQL_ROOT_PASSWORD: SWD@123456
+      ports:
+        - "3307:3306"
+
+    app:
+      image: hongthinh234/my-spring:v1.0
+      container_name: springboot_container  # Tên của container ứng dụng
+      environment:
+        MYSQL_URL: "jdbc:mysql://mysql_container:3306/mentor_bridge"
+        MYSQL_USER: "root"
+        MYSQL_PASSWORD: "SWD@123456"
+      depends_on:
+        - mysql_container
+      ports:
+        - "8081:8080"
